@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Goalie Data | 集計閲覧</title>
+  <style>
+    :root{
+      --bg:#0b1b3a;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:rgba(255,255,255,.7);
+      --line:rgba(255,255,255,.15);
+      --btn:#ffd400;
+      --btnText:#111;
+      --danger:#ff5a5a;
+      --ok:#59d38a;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:12px 12px 24px;
+    }
+
+    .app{
+      max-width:540px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .title{
+      font-size:18px;
+      font-weight:800;
+      letter-spacing:.02em;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+    .col{ flex:1; }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+    }
+
+    input, select{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      font-size:16px;
+      outline:none;
+    }
+
+    .seg{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .seg button{
+      flex:1;
+      min-width:120px;
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      font-weight:700;
+    }
+
+    .seg button.on{
+      background:var(--btn);
+      color:var(--btnText);
+      border-color:transparent;
+    }
+
+    .btn{
+      width:100%;
+      padding:14px 14px;
+      border-radius:14px;
+      border:none;
+      background:var(--btn);
+      color:var(--btnText);
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .ok{ color:var(--ok); font-weight:800; }
+    .err{ color:var(--danger); font-weight:800; }
+
+    /* 結果エリア共通 */
+    .resultPanel{
+      background:#fff;
+      border-radius:16px;
+      padding:12px;
+      border:1px solid #d9d9d9;
+      margin-top:10px;
+    }
+
+    .resultPanel .hint{
+      color:#444;
+    }
+
+    .total{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#fff;
+      color:#111;
+      border:1px solid #cfcfcf;
+      margin-top:2px;
+      font-weight:800;
+    }
+
+    /* 3x3 */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+      margin-top:10px;
+      
+      width:100%;
+      max-width:360px;
+      margin-left:auto;
+      margin-right:auto;
+    }
+    
+    .cell{
+      aspect-ratio:1 / 1;
+      border-radius:14px;
+      border:1px solid #cfcfcf;
+      background:#fff;
+      padding:10px 8px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      color:#111;
+    }
+
+    .pct{
+      font-size:18px;
+      font-weight:900;
+      line-height:1.1;
+      color:#111;
+    }
+
+    .count{
+      margin-top:5px;
+      font-size:12px;
+      font-weight:700;
+      color:#333;
+      line-height:1.1;
+    }
+
+    .r0  { background:#f8bcbc !important; }
+    .r10 { background:#f6d6a8 !important; }
+    .r30 { background:#fff1a8 !important; }
+    .r50 { background:#cfe9b6 !important; }
+    .r70 { background:#8fd19e !important; }
+
+    /* shooter area */
+    .shooterWrap{
+      margin-top:10px;
+      display:flex;
+      justify-content:center;
+    }
+
+    .shooterSvg{
+      width:100%;
+      max-width:420px;
+      display:block;
+    }
+
+    .areaTextPct{
+      font-size:20px;
+      font-weight:900;
+      fill:#111;
+      text-anchor:middle;
+    }
+
+    .areaTextCnt{
+      font-size:12px;
+      font-weight:700;
+      fill:#222;
+      text-anchor:middle;
+    }
+
+    .legend{
+      margin-top:10px;
+      font-size:12px;
+      color:#444;
+      text-align:center;
+      line-height:1.6;
+    }
+
+    .footerSpace{ height:14px; }
+
+    .shooterHalf{
+  position:relative;
+  width:100%;
+  max-width:460px;
+  height:240px;
+  margin:12px auto 0;
+  background:#fff;
+  border:3px solid #111;
+  border-top:none;
+  border-radius:0 0 220px 220px;
+  overflow:hidden;
+}
+
+/* 内側の半円ライン */
+.shooterHalf::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  top:25px;
+  width:230px;
+  height:110px;
+  border:3px solid #111;
+  border-top:none;
+  border-radius:0 0 220px 220px;
+  background:transparent;
+  pointer-events:none;
+}
+
+/* 区切り線 */
+.line{
+  position:absolute;
+  background:#111;
+  z-index:1;
+  pointer-events:none;
+}
+
+.diagL{
+  width:3px;
+  height:220px;
+  left:200px;
+  top:8px;
+  transform:rotate(30deg);
+  transform-origin:top center;
+}
+
+.diagR{
+  width:3px;
+  height:220px;
+  right:200px;
+  top:8px;
+  transform:rotate(-30deg);
+  transform-origin:top center;
+}
+
+.sa{
+  position:absolute;
+  width:92px;
+  min-height:58px;
+  border:1px solid #cfcfcf;
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:#111;
+  padding:6px 4px;
+  background:#f3f3f3;
+  z-index:2;
+}
+
+.sa .pct{
+  font-size:18px;
+  font-weight:900;
+  line-height:1.1;
+}
+
+.sa .count{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:700;
+  color:#333;
+  line-height:1.1;
+}
+
+/* 上段 5 3 1 */
+.sa5{ top:5px; left:90px; }
+.sa3{ top:55px; left:180px; }
+.sa1{ top:5px; right:90px; }
+
+/* 下段 6 4 2 */
+.sa6{ top:80px; left:32px; }
+.sa4{ top:150px; left:180px; }
+.sa2{ top:80px; right:32px; }
+    
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="title">集計結果閲覧（3×3＋シューターエリア別セーブ率）</div>
+
+    <!-- Step 1 -->
+    <div class="card">
+      <label>1) ゴーリー名</label>
+      <select id="goalieSel">
+        <option value="">読み込み中…</option>
+      </select>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card">
+      <label>2) メニュー選択</label>
+
+      <div class="seg" style="margin-bottom:10px;">
+        <button type="button" class="on" id="scopeAll">全体</button>
+        <button type="button" id="scopeCat">カテゴリー</button>
+        <button type="button" id="scopeMenu">メニュー</button>
+      </div>
+
+      <div id="catBox" style="display:none;">
+        <label>カテゴリー</label>
+        <select id="catSel">
+          <option value="vs">対人メニュー</option>
+          <option value="shoot">シュー練メニュー</option>
+        </select>
+      </div>
+
+      <div id="menuBox" style="display:none; margin-top:10px;">
+        <label>メニュー名</label>
+        <select id="menuSel">
+          <option value="">読み込み中…</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card">
+      <label>3) 期間設定</label>
+
+      <div class="seg" style="margin-bottom:10px;">
+        <button type="button" class="on" id="modeDate">直近2ヶ月（日付）</button>
+        <button type="button" id="modeMonth">2ヶ月以前（月ごと）</button>
+      </div>
+
+      <div id="dateBox">
+        <div class="row">
+          <div class="col">
+            <label>From</label>
+            <input id="fromDate" type="date" />
+          </div>
+          <div class="col">
+            <label>To</label>
+            <input id="toDate" type="date" />
+          </div>
+        </div>
+        <div class="hint" style="margin-top:8px;">日付指定は「今日から2ヶ月前〜今日」をおすすめ（自動で範囲をセット）</div>
+      </div>
+
+      <div id="monthBox" style="display:none;">
+        <div class="row">
+          <div class="col">
+            <label>From（月）</label>
+            <input id="fromMonth" type="month" />
+          </div>
+          <div class="col">
+            <label>To（月）</label>
+            <input id="toMonth" type="month" />
+          </div>
+        </div>
+        <div class="hint" style="margin-top:8px;">月ごと指定は「2ヶ月以前」のデータ向け（例：2025-10〜2025-12）</div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <button class="btn" id="btnRun">結果を見る</button>
+      </div>
+
+      <div id="msg" class="hint" style="margin-top:10px;"></div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="card" id="resultCard" style="display:none;">
+      <div class="hint">4) 結果（セーブ率 = セーブ / (セーブ + 成功)）</div>
+
+      <div class="resultPanel">
+        <div class="total" id="totalBox"></div>
+
+        <div class="hint" style="margin-top:10px;">コース別セーブ率</div>
+        <div class="grid" id="grid"></div>
+      </div>
+
+      <div class="resultPanel">
+        <div class="hint">シューターエリア別セーブ率</div>
+
+        <div class="shooterHalf" id="shooterHalf">
+          <div class="line diagL"></div>
+          <div class="line diagR"></div>
+          <div class="line midLine"></div>
+        
+          <div class="sa sa5" id="area5box">
+            <div class="pct" id="areaPct5">—</div>
+            <div class="count" id="areaCnt5">0/0</div>
+          </div>
+        
+          <div class="sa sa3" id="area3box">
+            <div class="pct" id="areaPct3">—</div>
+            <div class="count" id="areaCnt3">0/0</div>
+          </div>
+        
+          <div class="sa sa1" id="area1box">
+            <div class="pct" id="areaPct1">—</div>
+            <div class="count" id="areaCnt1">0/0</div>
+          </div>
+        
+          <div class="sa sa6" id="area6box">
+            <div class="pct" id="areaPct6">—</div>
+            <div class="count" id="areaCnt6">0/0</div>
+          </div>
+        
+          <div class="sa sa4" id="area4box">
+            <div class="pct" id="areaPct4">—</div>
+            <div class="count" id="areaCnt4">0/0</div>
+          </div>
+        
+          <div class="sa sa2" id="area2box">
+            <div class="pct" id="areaPct2">—</div>
+            <div class="count" id="areaCnt2">0/0</div>
+          </div>
+        </div>
+
+        <div class="legend" id="shooterLegend"></div>
+      </div>
+    </div>
+
+    <div class="footerSpace"></div>
+  </div>
+
+<script>
+  // ====== ここだけ必要に応じて差し替え ======
+  const SERVICE_URL = "https://script.google.com/macros/s/AKfycbx0tT9lgZPHZ8dKdRNrjj2Cl8KYeg_nXFLma52S657wV8RrsoAU2mETScVIUAk65C4nRA/exec";
+  // ========================================
+
+  let scope = "ALL";         // ALL | CATEGORY | MENU
+  let periodMode = "DATE";   // DATE | MONTH
+  let menus = [];
+  let goalies = [];
+
+  const $ = (id) => document.getElementById(id);
+
+  function showMsg(text, type="") {
+    const el = $("msg");
+    el.className = "hint " + (type==="ok" ? "ok" : type==="err" ? "err" : "");
+    el.textContent = text || "";
+  }
+
+  function ymd(d){
+    const y=d.getFullYear();
+    const m=("0"+(d.getMonth()+1)).slice(-2);
+    const dd=("0"+d.getDate()).slice(-2);
+    return `${y}-${m}-${dd}`;
+  }
+
+  function ym(d){
+    const y=d.getFullYear();
+    const m=("0"+(d.getMonth()+1)).slice(-2);
+    return `${y}-${m}`;
+  }
+
+  function clampDateInputsTo2Months(){
+    const today = new Date();
+    const from = new Date(today.getFullYear(), today.getMonth()-2, today.getDate());
+    $("fromDate").value = ymd(from);
+    $("toDate").value = ymd(today);
+    $("fromDate").max = ymd(today);
+    $("toDate").max = ymd(today);
+  }
+
+  function rateClass(rate){
+    if (rate === null) return "";
+    const p = rate * 100;
+    if (p < 10) return "r0";
+    if (p < 30) return "r10";
+    if (p < 50) return "r30";
+    if (p < 70) return "r50";
+    return "r70";
+  }
+
+  function rateColor(rate){
+    if (rate == null) return "#f3f3f3";
+    const p = rate * 100;
+    if (p < 10) return "#f8bcbc";
+    if (p < 30) return "#f6d6a8";
+    if (p < 50) return "#fff1a8";
+    if (p < 70) return "#cfe9b6";
+    return "#8fd19e";
+  }
+
+  function formatPct(rate){
+    return (rate == null) ? "—" : `${Math.round(rate * 100)}%`;
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+    }[c]));
+  }
+
+  async function apiGet(params){
+    const u = new URL(SERVICE_URL);
+    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k, v));
+    const res = await fetch(u.toString(), { method:"GET" });
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch(e){
+      throw new Error("JSON parse failed: " + text.slice(0,120));
+    }
+  }
+
+  async function loadMasters(){
+    const g = await apiGet({ action:"listGoalies" });
+    if (!g.ok) throw new Error(g.error || "listGoalies failed");
+    goalies = g.goalies || [];
+
+    const gs = $("goalieSel");
+    gs.innerHTML =
+      `<option value="">選択してください</option>` +
+      goalies.map(x => `<option value="${x.goalieId}">${escapeHtml(x.name)}</option>`).join("");
+
+    const m = await apiGet({ action:"listMenus" });
+    if (!m.ok) throw new Error(m.error || "listMenus failed");
+    menus = m.menus || [];
+
+    const ms = $("menuSel");
+    ms.innerHTML =
+      `<option value="">選択してください</option>` +
+      menus.map(x => `<option value="${x.menuId}">${escapeHtml(x.menuName)}（${escapeHtml(x.groupType)}）</option>`).join("");
+  }
+
+  function setScope(next){
+    scope = next;
+    $("scopeAll").classList.toggle("on", scope==="ALL");
+    $("scopeCat").classList.toggle("on", scope==="CATEGORY");
+    $("scopeMenu").classList.toggle("on", scope==="MENU");
+    $("catBox").style.display  = (scope==="CATEGORY") ? "" : "none";
+    $("menuBox").style.display = (scope==="MENU") ? "" : "none";
+  }
+
+  function setPeriodMode(next){
+    periodMode = next;
+    $("modeDate").classList.toggle("on", periodMode==="DATE");
+    $("modeMonth").classList.toggle("on", periodMode==="MONTH");
+    $("dateBox").style.display  = (periodMode==="DATE") ? "" : "none";
+    $("monthBox").style.display = (periodMode==="MONTH") ? "" : "none";
+  }
+
+  async function runSummary(){
+    try{
+      showMsg("集計中…");
+      $("resultCard").style.display = "none";
+
+      const goalieId = $("goalieSel").value;
+      if (!goalieId) return showMsg("ゴーリー名を選択してください", "err");
+
+      let from="", to="";
+      if (periodMode==="DATE"){
+        from = $("fromDate").value;
+        to   = $("toDate").value;
+        if (!from || !to) return showMsg("日付（From/To）を入れてください", "err");
+      } else {
+        from = $("fromMonth").value;
+        to   = $("toMonth").value;
+        if (!from || !to) return showMsg("月（From/To）を入れてください", "err");
+      }
+
+      const params = {
+        action:"summary9",
+        goalieId,
+        menuScope: scope,
+        periodMode,
+        from, to
+      };
+
+      if (scope==="CATEGORY"){
+        params.groupType = $("catSel").value;
+      }
+
+      if (scope==="MENU"){
+        const menuId = $("menuSel").value;
+        if (!menuId) return showMsg("メニュー名を選択してください", "err");
+        params.menuId = menuId;
+      }
+
+      const json = await apiGet(params);
+      if (!json.ok) throw new Error(json.error || "summary failed");
+
+      renderSummary(json);
+      showMsg("表示しました", "ok");
+    }catch(e){
+      console.error(e);
+      showMsg("エラー: " + (e.message || e), "err");
+    }
+  }
+
+  function renderSummary(json){
+    const total = json.total || {};
+    const totalRate = formatPct(total.rate);
+
+    $("totalBox").innerHTML = `
+      <div>合計セーブ率：${totalRate}</div>
+      <div>${total.saves||0} / ${total.denom||0}</div>
+    `;
+
+    // 3x3
+    const g = json.grid || {};
+    const cells = [];
+
+    for (let i=1; i<=9; i++){
+      const cell = g[i] || {};
+      const rate = (cell.rate == null) ? null : cell.rate;
+      const pct  = formatPct(rate);
+      const cls  = rateClass(rate);
+
+      cells.push(`
+        <div class="cell ${cls}">
+          <div class="pct">${pct}</div>
+          <div class="count">${cell.saves||0}/${cell.denom||0}</div>
+        </div>
+      `);
+    }
+    $("grid").innerHTML = cells.join("");
+
+    // shooter area
+    const shooter = json.shooterArea || {};
+    [1,2,3,4,5,6].forEach(n=>{
+      const cell = shooter[n] || {};
+      const rate = (cell.rate == null) ? null : cell.rate;
+      const saves = cell.saves || 0;
+      const denom = cell.denom || 0;
+      
+      const boxEl = document.getElementById(`area${n}box`);
+      const pctEl = document.getElementById(`areaPct${n}`);
+      const cntEl = document.getElementById(`areaCnt${n}`);
+      
+      if (boxEl) boxEl.style.background = rateColor(rate);
+      if (pctEl) pctEl.textContent = formatPct(rate);
+      if (cntEl) cntEl.textContent = `${saves}/${denom}`;
+    });
+
+    const order = [5,3,1,6,4,2];
+    $("shooterLegend").textContent = order.map(n=>{
+      const cell = shooter[n] || {};
+      return `エリア${n}: ${formatPct(cell.rate == null ? null : cell.rate)} (${cell.saves||0}/${cell.denom||0})`;
+    }).join(" ｜ ");
+
+    $("resultCard").style.display = "";
+  }
+
+  $("scopeAll").addEventListener("click", ()=>setScope("ALL"));
+  $("scopeCat").addEventListener("click", ()=>setScope("CATEGORY"));
+  $("scopeMenu").addEventListener("click", ()=>setScope("MENU"));
+  $("modeDate").addEventListener("click", ()=>setPeriodMode("DATE"));
+  $("modeMonth").addEventListener("click", ()=>setPeriodMode("MONTH"));
+  $("btnRun").addEventListener("click", runSummary);
+
+  (async function init(){
+    clampDateInputsTo2Months();
+
+    const today = new Date();
+    const fm = new Date(today.getFullYear(), today.getMonth()-4, 1);
+    const tm = new Date(today.getFullYear(), today.getMonth()-3, 1);
+    $("fromMonth").value = ym(fm);
+    $("toMonth").value = ym(tm);
+
+    try{
+      showMsg("マスタ読み込み中…");
+      await loadMasters();
+      showMsg("準備OK。条件を選んで「結果を見る」", "ok");
+    }catch(e){
+      console.error(e);
+      showMsg("マスタ取得に失敗: " + (e.message||e) + "（listGoalies/listMenus が未実装ならGAS側に追加が必要）", "err");
+    }
+  })();
+</script>
+</body>
+</html>
