@@ -237,6 +237,7 @@
   overflow:hidden;
 }
 
+
 /* 内側の半円ライン */
 .shooterHalf::before{
   content:"";
@@ -324,13 +325,139 @@
    スマホ用レイアウト調整
 ========================= */
 
-@media (max-width: 480px){
+/* 半円の外側ラッパー */
+.shooterHalfWrap{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  overflow:hidden;
+  margin-top:12px;
+}
 
-/* 半円全体を少し縮小 */
+/* 半円本体 */
 .shooterHalf{
-  transform:scale(0.85);
+  position:relative;
+  width:420px;
+  height:260px;
+  background:#fff;
+  border:3px solid #111;
+  border-top:none;
+  border-radius:0 0 260px 260px;
+  overflow:hidden;
+  flex:0 0 auto;
+}
+
+/* 内側の半円 */
+.shooterHalf::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  top:0;
+  width:240px;
+  height:120px;
+  border:3px solid #111;
+  border-top:none;
+  border-radius:0 0 240px 240px;
+  background:transparent;
+  pointer-events:none;
+}
+
+/* 区切り線 */
+.line{
+  position:absolute;
+  background:#111;
+  z-index:1;
+  pointer-events:none;
+}
+
+.diagL{
+  width:3px;
+  height:130px;
+  left:152px;
+  top:6px;
+  transform:rotate(43deg);
   transform-origin:top center;
-  margin-bottom:-30px;
+}
+
+.diagR{
+  width:3px;
+  height:130px;
+  right:152px;
+  top:6px;
+  transform:rotate(-43deg);
+  transform-origin:top center;
+}
+
+.midLine{
+  width:3px;
+  height:68px;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+}
+
+/* エリアの箱 */
+.sa{
+  position:absolute;
+  width:92px;
+  min-height:58px;
+  border:1px solid #cfcfcf;
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
+  color:#111;
+  padding:6px 4px;
+  background:#f3f3f3;
+  z-index:2;
+}
+
+.sa .pct{
+  font-size:18px;
+  font-weight:900;
+  line-height:1.1;
+}
+
+.sa .count{
+  margin-top:4px;
+  font-size:12px;
+  font-weight:700;
+  color:#333;
+  line-height:1.1;
+}
+
+/* 上段 5 3 1 */
+.sa5{ top:24px; left:76px; }
+.sa3{ top:34px; left:164px; }
+.sa1{ top:24px; right:76px; }
+
+/* 下段 6 4 2 */
+.sa6{ top:104px; left:24px; }
+.sa4{ top:124px; left:164px; }
+.sa2{ top:104px; right:24px; }
+
+/* スマホだけ縮小 */
+@media (max-width: 480px){
+  .shooterHalfWrap{
+    height:220px; /* 縮小後の見た目の高さぶん確保 */
+  }
+
+  .shooterHalf{
+    transform:scale(0.84);
+    transform-origin:top center;
+  }
+
+  .sa .pct{
+    font-size:16px;
+  }
+
+  .sa .count{
+    font-size:11px;
+  }
 }
 
 /* シューターエリアの箱 */
@@ -356,8 +483,6 @@
 
 .count{
   font-size:11px;
-}
-
 }
     
   </style>
@@ -458,6 +583,7 @@
       <div class="resultPanel">
         <div class="hint">シューターエリア別セーブ率</div>
 
+        <div class="shooterHalfWrap"></div>
         <div class="shooterHalf" id="shooterHalf">
           <div class="line diagL"></div>
           <div class="line diagR"></div>
