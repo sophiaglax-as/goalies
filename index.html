@@ -6,366 +6,268 @@
   <title>Goalie Data | 集計閲覧</title>
   <style>
     :root{
-      --bg:#0b1b3a;
-      --card:rgba(255,255,255,.08);
-      --card2:rgba(255,255,255,.12);
-      --text:#fff;
-      --muted:rgba(255,255,255,.7);
-      --line:rgba(255,255,255,.15);
-      --btn:#ffd400;
-      --btnText:#111;
-      --danger:#ff5a5a;
-      --ok:#59d38a;
-    }
+  --bg:#0b1b3a;
+  --card:rgba(255,255,255,.08);
+  --card2:rgba(255,255,255,.12);
+  --text:#fff;
+  --muted:rgba(255,255,255,.72);
+  --line:rgba(255,255,255,.15);
+  --btn:#ffd400;
+  --btnText:#111;
+  --danger:#ff6b6b;
+  --ok:#59d38a;
 
-    *{ box-sizing:border-box; }
+  --panelBg:#fff;
+  --panelLine:#d8d8d8;
+  --cellLine:#cfcfcf;
+  --textDark:#111;
+  --textSub:#444;
+}
 
-    body{
-      margin:0;
-      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      padding:12px 12px 24px;
-    }
+*{ box-sizing:border-box; }
 
-    .app{
-      max-width:540px;
-      margin:0 auto;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+html, body{
+  margin:0;
+  padding:0;
+}
 
-    .title{
-      font-size:18px;
-      font-weight:800;
-      letter-spacing:.02em;
-    }
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-text-size-adjust:100%;
+  padding:10px 10px 24px;
+}
 
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-    }
-
-    .row{ display:flex; gap:10px; align-items:center; }
-    .col{ flex:1; }
-
-    label{
-      display:block;
-      font-size:12px;
-      color:var(--muted);
-      margin:0 0 6px;
-    }
-
-    input, select{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.15);
-      color:var(--text);
-      font-size:16px;
-      outline:none;
-    }
-
-    .seg{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .seg button{
-      flex:1;
-      min-width:120px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.15);
-      color:var(--text);
-      font-weight:700;
-    }
-
-    .seg button.on{
-      background:var(--btn);
-      color:var(--btnText);
-      border-color:transparent;
-    }
-
-    .btn{
-      width:100%;
-      padding:14px 14px;
-      border-radius:14px;
-      border:none;
-      background:var(--btn);
-      color:var(--btnText);
-      font-size:16px;
-      font-weight:900;
-    }
-
-    .hint{
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.5;
-    }
-
-    .ok{ color:var(--ok); font-weight:800; }
-    .err{ color:var(--danger); font-weight:800; }
-
-    /* 結果エリア共通 */
-    .resultPanel{
-      background:#fff;
-      border-radius:16px;
-      padding:12px;
-      border:1px solid #d9d9d9;
-      margin-top:10px;
-    }
-
-    .resultPanel .hint{
-      color:#444;
-    }
-
-    .total{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border-radius:14px;
-      background:#fff;
-      color:#111;
-      border:1px solid #cfcfcf;
-      margin-top:2px;
-      font-weight:800;
-    }
-
-    /* 3x3 */
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:8px;
-      margin-top:10px;
-      
-      width:100%;
-      max-width:360px;
-      margin-left:auto;
-      margin-right:auto;
-    }
-    
-    .cell{
-      aspect-ratio:1 / 1;
-      border-radius:14px;
-      border:1px solid #cfcfcf;
-      background:#fff;
-      padding:10px 8px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
-      color:#111;
-    }
-
-    .pct{
-      font-size:18px;
-      font-weight:900;
-      line-height:1.1;
-      color:#111;
-    }
-
-    .count{
-      margin-top:5px;
-      font-size:12px;
-      font-weight:700;
-      color:#333;
-      line-height:1.1;
-    }
-
-    .r0  { background:#f8bcbc !important; }
-    .r10 { background:#f6d6a8 !important; }
-    .r30 { background:#fff1a8 !important; }
-    .r50 { background:#cfe9b6 !important; }
-    .r70 { background:#8fd19e !important; }
-
-    /* shooter area */
-    .shooterWrap{
-      margin-top:10px;
-      display:flex;
-      justify-content:center;
-    }
-
-    .shooterSvg{
-      width:100%;
-      max-width:420px;
-      display:block;
-    }
-
-    .areaTextPct{
-      font-size:20px;
-      font-weight:900;
-      fill:#111;
-      text-anchor:middle;
-    }
-
-    .areaTextCnt{
-      font-size:12px;
-      font-weight:700;
-      fill:#222;
-      text-anchor:middle;
-    }
-
-    .legend{
-      margin-top:10px;
-      font-size:12px;
-      color:#444;
-      text-align:center;
-      line-height:1.6;
-    }
-
-    .footerSpace{ height:14px; }
-
-    .shooterHalf{
-  position:relative;
+.app{
   width:100%;
-  max-width:460px;
-  height:240px;
-  margin:12px auto 0;
-  background:#fff;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 220px 220px;
-  overflow:hidden;
+  max-width:420px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
 }
 
-
-/* 内側の半円ライン */
-.shooterHalf::before{
-  content:"";
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  top:25px;
-  width:230px;
-  height:110px;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 220px 220px;
-  background:transparent;
-  pointer-events:none;
+.title{
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:.02em;
+  padding:2px 2px 0;
 }
 
-/* 区切り線 */
-.line{
-  position:absolute;
-  background:#111;
-  z-index:1;
-  pointer-events:none;
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
 }
 
-.diagL{
-  width:3px;
-  height:220px;
-  left:200px;
-  top:8px;
-  transform:rotate(30deg);
-  transform-origin:top center;
+.row{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
 }
 
-.diagR{
-  width:3px;
-  height:220px;
-  right:200px;
-  top:8px;
-  transform:rotate(-30deg);
-  transform-origin:top center;
+.col{
+  flex:1;
+  min-width:0;
 }
 
-.sa{
-  position:absolute;
-  width:92px;
-  min-height:58px;
-  border:1px solid #cfcfcf;
+label{
+  display:block;
+  font-size:12px;
+  color:var(--muted);
+  margin:0 0 6px;
+}
+
+input, select, button{
+  font:inherit;
+}
+
+input, select{
+  width:100%;
+  min-height:46px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+  color:var(--text);
+  font-size:16px;
+  outline:none;
+}
+
+.seg{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.seg button{
+  min-height:42px;
+  padding:8px 8px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.18);
+  color:var(--text);
+  font-size:13px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+.seg button.on{
+  background:var(--btn);
+  color:var(--btnText);
+  border-color:transparent;
+}
+
+.seg4{
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 360px){
+  .seg4{
+    gap:6px;
+  }
+
+  .seg4 button{
+    font-size:11px;
+    padding:8px 2px;
+  }
+}
+
+.btn{
+  width:100%;
+  min-height:48px;
+  padding:12px 14px;
   border-radius:14px;
+  border:none;
+  background:var(--btn);
+  color:var(--btnText);
+  font-size:16px;
+  font-weight:900;
+}
+
+.hint{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.ok{ color:var(--ok); font-weight:800; }
+.err{ color:var(--danger); font-weight:800; }
+
+/* 結果カード */
+.resultPanel{
+  background:var(--panelBg);
+  border-radius:16px;
+  padding:12px;
+  border:1px solid var(--panelLine);
+  margin-top:10px;
+}
+
+.resultPanel .hint{
+  color:var(--textSub);
+}
+
+/* 合計 */
+.total{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:#fff;
+  color:var(--textDark);
+  border:1px solid var(--cellLine);
+  margin-top:2px;
+  font-weight:800;
+  font-size:14px;
+}
+
+/* 3x3 */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  width:100%;
+  max-width:300px;
+  margin:10px auto 0;
+}
+
+.cell{
+  aspect-ratio:1 / 1;
+  border-radius:14px;
+  border:1px solid var(--cellLine);
+  background:#fff;
+  padding:8px 6px;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
   text-align:center;
-  color:#111;
-  padding:6px 4px;
-  background:#f3f3f3;
-  z-index:2;
+  color:var(--textDark);
 }
 
-.sa .pct{
-  font-size:18px;
+.pct{
+  font-size:17px;
   font-weight:900;
-  line-height:1.1;
+  line-height:1.05;
+  color:var(--textDark);
 }
 
-.sa .count{
+.count{
   margin-top:4px;
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
   color:#333;
   line-height:1.1;
 }
 
-/* 上段 5 3 1 */
-.sa5{ top:5px; left:90px; }
-.sa3{ top:55px; left:180px; }
-.sa1{ top:5px; right:90px; }
+.r0  { background:#f8bcbc !important; }
+.r10 { background:#f6d6a8 !important; }
+.r30 { background:#fff1a8 !important; }
+.r50 { background:#cfe9b6 !important; }
+.r70 { background:#8fd19e !important; }
 
-/* 下段 6 4 2 */
-.sa6{ top:80px; left:32px; }
-.sa4{ top:150px; left:180px; }
-.sa2{ top:80px; right:32px; }
-
-/* =========================
-   スマホ用レイアウト調整
-========================= */
-
-/* 半円の外側ラッパー */
+/* 半円エリア */
 .shooterHalfWrap{
   width:100%;
   display:flex;
   justify-content:center;
   align-items:flex-start;
   overflow:hidden;
-  margin-top:12px;
+  margin-top:10px;
+  height:205px;
 }
 
-/* 半円本体 */
 .shooterHalf{
   position:relative;
-  width:100%;
-  max-width:460px;
-  height:240px;
-  margin:12px auto 0;
+  width:360px;
+  height:205px;
   background:#fff;
   border:3px solid #111;
   border-top:none;
-  border-radius:0 0 220px 220px;
+  border-radius:0 0 205px 205px;
   overflow:hidden;
+  flex:0 0 auto;
 }
 
-/* 内側の半円 */
 .shooterHalf::before{
   content:"";
   position:absolute;
   left:50%;
   transform:translateX(-50%);
-  top:25px;
-  width:230px;
-  height:110px;
+  top:0;
+  width:205px;
+  height:102px;
   border:3px solid #111;
   border-top:none;
-  border-radius:0 0 220px 220px;
+  border-radius:0 0 205px 205px;
   background:transparent;
   pointer-events:none;
 }
 
-/* 区切り線 */
 .line{
   position:absolute;
   background:#111;
@@ -375,114 +277,124 @@
 
 .diagL{
   width:3px;
-  height:220px;
-  left:200px;
-  top:8px;
+  height:200px;
+  left:170px;
+  top:4px;
   transform:rotate(30deg);
   transform-origin:top center;
 }
 
 .diagR{
   width:3px;
-  height:220px;
-  right:200px;
-  top:8px;
+  height:2000px;
+  right:170px;
+  top:4px;
   transform:rotate(-30deg);
   transform-origin:top center;
 }
 
-/* エリアの箱 */
 .sa{
   position:absolute;
-  width:92px;
-  min-height:58px;
-  border:1px solid #cfcfcf;
-  border-radius:14px;
+  width:70px;
+  min-height:40px;
+  border:1px solid var(--cellLine);
+  border-radius:12px;
   display:flex;
   flex-direction:column;
   justify-content:center;
   align-items:center;
   text-align:center;
   color:#111;
-  padding:6px 4px;
+  padding:5px 4px;
   background:#f3f3f3;
   z-index:2;
 }
 
 .sa .pct{
-  font-size:18px;
+  font-size:15px;
   font-weight:900;
-  line-height:1.1;
+  line-height:1.05;
 }
 
 .sa .count{
-  margin-top:4px;
-  font-size:12px;
+  margin-top:3px;
+  font-size:10px;
   font-weight:700;
   color:#333;
   line-height:1.1;
 }
 
-/* 上段 5 3 1 */
-.sa5{ top:5px; left:90px; }
-.sa3{ top:55px; left:185px; }
-.sa1{ top:5px; right:90px; }
+/* 5 3 1 */
+.sa5{ top:2px; left:80px; }
+.sa3{ top:50px; left: 142px; }
+.sa1{ top:2px; right:80px; }
 
-/* 下段 6 4 2 */
-.sa6{ top:80px; left:32px; }
-.sa4{ top:150px; left:185px; }
-.sa2{ top:80px; right:32px; }
+/* 6 4 2 */
+.sa6{ top:70px; left:24px; }
+.sa4{ top:130px; left:142px; }
+.sa2{ top:70px; right:24px; }
 
-/* スマホだけ縮小 */
-@media (max-width: 480px){
-  .shooterHalfWrap{
-    height:220px; /* 縮小後の見た目の高さぶん確保 */
+.legend{
+  margin-top:10px;
+  font-size:11px;
+  color:#444;
+  text-align:center;
+  line-height:1.6;
+}
+
+.footerSpace{
+  height:8px;
+}
+
+/* かなり狭い端末 */
+@media (max-width: 360px){
+  body{
+    padding-left:8px;
+    padding-right:8px;
   }
 
-  .shooterHalf{
-    transform:scale(0.84);
-    transform-origin:top center;
+  .app{
+    max-width:100%;
   }
 
-  .sa .pct{
+  .seg button{
+    font-size:12px;
+    min-height:40px;
+    padding:8px 4px;
+  }
+
+  .grid{
+    max-width:270px;
+    gap:6px;
+  }
+
+  .cell{
+    border-radius:12px;
+  }
+
+  .pct{
     font-size:16px;
   }
 
-  .sa .count{
-    font-size:11px;
+  .count{
+    font-size:10px;
   }
-}
 
-/* シューターエリアの箱 */
-.sa{
-  width:82px;
-  min-height:52px;
-}
+  .shooterHalfWrap{
+    height:188px;
+  }
 
-/* セーブ率 (%) */
-.sa .pct{
-  font-size:16px;
-}
-
-/* 回数 */
-.sa .count{
-  font-size:11px;
-}
-
-/* 3×3の数字 */
-.pct{
-  font-size:16px;
-}
-
-.count{
-  font-size:11px;
+  .shooterHalf{
+    transform:scale(.92);
+    transform-origin:top center;
+  }
 }
     
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="title">集計結果閲覧（3×3＋シューターエリア別セーブ率）</div>
+    <div class="title">ゴーリーデータ</div>
 
     <!-- Step 1 -->
     <div class="card">
@@ -555,6 +467,21 @@
         <div class="hint" style="margin-top:8px;">月ごと指定は「2ヶ月以前」のデータ向け（例：2025-10〜2025-12）</div>
       </div>
 
+      <div style="margin-top:14px;">
+        <label>4) ゴーリー位置</label>
+
+        <div class="seg seg4">
+          <button type="button" class="on" id="posAll">全体</button>
+          <button type="button" id="posLeft">左</button>
+          <button type="button" id="posCenter">中央</button>
+          <button type="button" id="posRight">右</button>
+        </div>
+
+        <div class="hint" style="margin-top:8px;">
+          ゴーリーの立ち位置ごとに結果を絞り込みます
+        </div>
+      </div>
+
       <div style="margin-top:10px;">
         <button class="btn" id="btnRun">結果を見る</button>
       </div>
@@ -564,7 +491,7 @@
 
     <!-- Step 4 -->
     <div class="card" id="resultCard" style="display:none;">
-      <div class="hint">4) 結果（セーブ率 = セーブ / (セーブ + 成功)）</div>
+      <div class="hint">5) 結果（セーブ率 = セーブ / (セーブ + 成功)）</div>
 
       <div class="resultPanel">
         <div class="total" id="totalBox"></div>
@@ -576,40 +503,41 @@
       <div class="resultPanel">
         <div class="hint">シューターエリア別セーブ率</div>
 
-        <div class="shooterHalfWrap"></div>
-        <div class="shooterHalf" id="shooterHalf">
-          <div class="line diagL"></div>
-          <div class="line diagR"></div>
-          <div class="line midLine"></div>
+        <div class="shooterHalfWrap">
+          <div class="shooterHalf" id="shooterHalf">
+            <div class="line diagL"></div>
+            <div class="line diagR"></div>
+            <div class="line midLine"></div>
         
-          <div class="sa sa5" id="area5box">
-            <div class="pct" id="areaPct5">—</div>
-            <div class="count" id="areaCnt5">0/0</div>
-          </div>
+            <div class="sa sa5" id="area5box">
+              <div class="pct" id="areaPct5">—</div>
+              <div class="count" id="areaCnt5">0/0</div>
+            </div>
         
-          <div class="sa sa3" id="area3box">
-            <div class="pct" id="areaPct3">—</div>
-            <div class="count" id="areaCnt3">0/0</div>
-          </div>
+            <div class="sa sa3" id="area3box">
+              <div class="pct" id="areaPct3">—</div>
+              <div class="count" id="areaCnt3">0/0</div>
+            </div>
         
-          <div class="sa sa1" id="area1box">
-            <div class="pct" id="areaPct1">—</div>
-            <div class="count" id="areaCnt1">0/0</div>
-          </div>
+            <div class="sa sa1" id="area1box">
+              <div class="pct" id="areaPct1">—</div>
+              <div class="count" id="areaCnt1">0/0</div>
+            </div>
         
-          <div class="sa sa6" id="area6box">
-            <div class="pct" id="areaPct6">—</div>
-            <div class="count" id="areaCnt6">0/0</div>
-          </div>
+            <div class="sa sa6" id="area6box">
+              <div class="pct" id="areaPct6">—</div>
+              <div class="count" id="areaCnt6">0/0</div>
+            </div>
         
-          <div class="sa sa4" id="area4box">
-            <div class="pct" id="areaPct4">—</div>
-            <div class="count" id="areaCnt4">0/0</div>
-          </div>
+            <div class="sa sa4" id="area4box">
+              <div class="pct" id="areaPct4">—</div>
+              <div class="count" id="areaCnt4">0/0</div>
+            </div>
         
-          <div class="sa sa2" id="area2box">
-            <div class="pct" id="areaPct2">—</div>
-            <div class="count" id="areaCnt2">0/0</div>
+            <div class="sa sa2" id="area2box">
+              <div class="pct" id="areaPct2">—</div>
+              <div class="count" id="areaCnt2">0/0</div>
+            </div>
           </div>
         </div>
 
@@ -622,11 +550,12 @@
 
 <script>
   // ====== ここだけ必要に応じて差し替え ======
-  const SERVICE_URL = "https://script.google.com/macros/s/AKfycbx0tT9lgZPHZ8dKdRNrjj2Cl8KYeg_nXFLma52S657wV8RrsoAU2mETScVIUAk65C4nRA/exec";
+  const SERVICE_URL = "https://script.google.com/macros/s/AKfycbwHdYfkDlZX6CWnv9tN2NxH8Hhg15F07mfEChnQBJm8JtATw78De9Z4e_3-NYCX7Rbrdw/exec";
   // ========================================
 
   let scope = "ALL";         // ALL | CATEGORY | MENU
   let periodMode = "DATE";   // DATE | MONTH
+  let goaliePosScope = "ALL"; // ALL | LEFT | CENTER | RIGHT
   let menus = [];
   let goalies = [];
 
@@ -735,6 +664,15 @@
     $("menuBox").style.display = (scope==="MENU") ? "" : "none";
   }
 
+  function setGoaliePosScope(next){
+    goaliePosScope = next;
+
+    $("posAll").classList.toggle("on", goaliePosScope==="ALL");
+    $("posLeft").classList.toggle("on", goaliePosScope==="LEFT");
+    $("posCenter").classList.toggle("on", goaliePosScope==="CENTER");
+    $("posRight").classList.toggle("on", goaliePosScope==="RIGHT");
+  }
+
   function setPeriodMode(next){
     periodMode = next;
     $("modeDate").classList.toggle("on", periodMode==="DATE");
@@ -767,6 +705,7 @@
         goalieId,
         menuScope: scope,
         periodMode,
+        goaliePosScope,
         from, to
       };
 
@@ -850,6 +789,10 @@
   $("scopeMenu").addEventListener("click", ()=>setScope("MENU"));
   $("modeDate").addEventListener("click", ()=>setPeriodMode("DATE"));
   $("modeMonth").addEventListener("click", ()=>setPeriodMode("MONTH"));
+  $("posAll").addEventListener("click", ()=>setGoaliePosScope("ALL"));
+  $("posLeft").addEventListener("click", ()=>setGoaliePosScope("LEFT"));
+  $("posCenter").addEventListener("click", ()=>setGoaliePosScope("CENTER"));
+  $("posRight").addEventListener("click", ()=>setGoaliePosScope("RIGHT"));
   $("btnRun").addEventListener("click", runSummary);
 
   (async function init(){
