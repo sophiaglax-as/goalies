@@ -340,14 +340,47 @@ input, select{
   color:#444;
   text-align:center;
   line-height:1.6;
+  word-break:break-word;
 }
 
 .footerSpace{
   height:8px;
 }
 
-/* かなり狭い端末 */
-@media (max-width: 360px){
+/* タブレット以下 */
+@media (max-width:600px){
+  .periodRow{
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .periodRow .col{
+    width:100%;
+  }
+
+  .periodRow input[type="date"],
+  .periodRow input[type="month"]{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    font-size:14px;
+    padding:10px 8px;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+
+  .total{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .legend{
+    font-size:10px;
+  }
+}
+
+/* やや狭いスマホ */
+@media (max-width:390px){
   body{
     padding-left:8px;
     padding-right:8px;
@@ -357,10 +390,24 @@ input, select{
     max-width:100%;
   }
 
+  .seg{
+    gap:6px;
+  }
+
   .seg button{
     font-size:12px;
     min-height:40px;
     padding:8px 4px;
+  }
+
+  .seg4 button{
+    font-size:11px;
+    padding:8px 2px;
+  }
+
+  input, select{
+    font-size:15px;
+    padding:10px 10px;
   }
 
   .grid{
@@ -387,6 +434,70 @@ input, select{
   .shooterHalf{
     transform:scale(.92);
     transform-origin:top center;
+  }
+}
+
+/* かなり狭い端末 */
+@media (max-width:360px){
+  .title{
+    font-size:16px;
+  }
+
+  .card{
+    padding:10px;
+    border-radius:14px;
+  }
+
+  .seg{
+    gap:5px;
+  }
+
+  .seg button{
+    font-size:11px;
+    min-height:38px;
+    padding:7px 2px;
+  }
+
+  .seg4 button{
+    font-size:10px;
+  }
+
+  input, select{
+    min-height:44px;
+    font-size:14px;
+    padding:9px 8px;
+  }
+
+  .periodRow input[type="date"],
+  .periodRow input[type="month"]{
+    font-size:13px;
+    padding:9px 6px;
+  }
+
+  .grid{
+    max-width:255px;
+    gap:5px;
+  }
+
+  .pct{
+    font-size:15px;
+  }
+
+  .count{
+    font-size:9px;
+  }
+
+  .shooterHalfWrap{
+    height:176px;
+  }
+
+  .shooterHalf{
+    transform:scale(.86);
+    transform-origin:top center;
+  }
+
+  .legend{
+    font-size:9px;
   }
 }
 
