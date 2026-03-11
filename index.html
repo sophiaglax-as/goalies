@@ -389,7 +389,57 @@ input, select{
     transform-origin:top center;
   }
 }
-    
+
+/* 期間指定まわり */
+.periodRow{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  width:100%;
+}
+
+.periodRow .col{
+  flex:1;
+  min-width:0;
+  width:100%;
+}
+
+.periodRow input{
+  display:block;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+/* スマホ対策 */
+@media (max-width:600px){
+  .periodRow{
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .periodRow .col{
+    width:100%;
+  }
+
+  .periodRow input[type="date"],
+  .periodRow input[type="month"]{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    font-size:14px;
+    padding:10px 8px;
+    overflow:hidden;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+
+  .card{
+    overflow:hidden;
+  }
+}
+   
+
   </style>
 </head>
 <body>
