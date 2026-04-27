@@ -3,980 +3,1030 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Goalie Data | 集計閲覧</title>
+  <title>Goalie Data App</title>
   <style>
     :root{
-  --bg:#0b1b3a;
-  --card:rgba(255,255,255,.08);
-  --card2:rgba(255,255,255,.12);
-  --text:#fff;
-  --muted:rgba(255,255,255,.72);
-  --line:rgba(255,255,255,.15);
-  --btn:#ffd400;
-  --btnText:#111;
-  --danger:#ff6b6b;
-  --ok:#59d38a;
-
-  --panelBg:#fff;
-  --panelLine:#d8d8d8;
-  --cellLine:#cfcfcf;
-  --textDark:#111;
-  --textSub:#444;
-}
-
-*{ box-sizing:border-box; }
-
-html, body{
-  margin:0;
-  padding:0;
-}
-
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  -webkit-text-size-adjust:100%;
-  padding:10px 10px 24px;
-}
-
-.app{
-  width:100%;
-  max-width:420px;
-  margin:0 auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.title{
-  font-size:17px;
-  font-weight:800;
-  letter-spacing:.02em;
-  padding:2px 2px 0;
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-}
-
-.row{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-
-.col{
-  flex:1;
-  min-width:0;
-}
-
-label{
-  display:block;
-  font-size:12px;
-  color:var(--muted);
-  margin:0 0 6px;
-}
-
-input, select, button{
-  font:inherit;
-}
-
-input, select{
-  width:100%;
-  min-height:46px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.18);
-  color:var(--text);
-  font-size:16px;
-  outline:none;
-}
-
-.seg{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-}
-
-.seg button{
-  min-height:42px;
-  padding:8px 8px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.18);
-  color:var(--text);
-  font-size:13px;
-  font-weight:800;
-  white-space:nowrap;
-}
-
-.seg button.on{
-  background:var(--btn);
-  color:var(--btnText);
-  border-color:transparent;
-}
-
-.seg4{
-  grid-template-columns: repeat(4, 1fr);
-}
-
-@media (max-width: 360px){
-  .seg4{
-    gap:6px;
-  }
-
-  .seg4 button{
-    font-size:11px;
-    padding:8px 2px;
-  }
-}
-
-.btn{
-  width:100%;
-  min-height:48px;
-  padding:12px 14px;
-  border-radius:14px;
-  border:none;
-  background:var(--btn);
-  color:var(--btnText);
-  font-size:16px;
-  font-weight:900;
-}
-
-.hint{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.5;
-}
-
-.ok{ color:var(--ok); font-weight:800; }
-.err{ color:var(--danger); font-weight:800; }
-
-/* 結果カード */
-.resultPanel{
-  background:var(--panelBg);
-  border-radius:16px;
-  padding:12px;
-  border:1px solid var(--panelLine);
-  margin-top:10px;
-}
-
-.resultPanel .hint{
-  color:var(--textSub);
-}
-
-/* 合計 */
-.total{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#fff;
-  color:var(--textDark);
-  border:1px solid var(--cellLine);
-  margin-top:2px;
-  font-weight:800;
-  font-size:14px;
-}
-
-/* 3x3 */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  width:100%;
-  max-width:300px;
-  margin:10px auto 0;
-}
-
-.cell{
-  aspect-ratio:1 / 1;
-  border-radius:14px;
-  border:1px solid var(--cellLine);
-  background:#fff;
-  padding:8px 6px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  color:var(--textDark);
-}
-
-.pct{
-  font-size:17px;
-  font-weight:900;
-  line-height:1.05;
-  color:var(--textDark);
-}
-
-.count{
-  margin-top:4px;
-  font-size:11px;
-  font-weight:700;
-  color:#333;
-  line-height:1.1;
-}
-
-.r0  { background:#f8bcbc !important; }
-.r10 { background:#f6d6a8 !important; }
-.r30 { background:#fff1a8 !important; }
-.r50 { background:#cfe9b6 !important; }
-.r70 { background:#8fd19e !important; }
-
-/* 半円エリア */
-.shooterHalfWrap{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  overflow:visible;
-  margin-top:10px;
-  min-height:205px;
-  padding:6px 0 10px;
-}
-
-.shooterHalf{
-  position:relative;
-  width:360px;
-  height:205px;
-  background:#fff;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 205px 205px;
-  overflow:hidden;
-  flex:0 0 auto;
-}
-
-.shooterHalf::before{
-  content:"";
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  top:0;
-  width:205px;
-  height:102px;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 205px 205px;
-  background:transparent;
-  pointer-events:none;
-}
-
-.line{
-  position:absolute;
-  background:#111;
-  z-index:1;
-  pointer-events:none;
-}
-
-.diagL{
-  width:3px;
-  height:200px;
-  left:170px;
-  top:4px;
-  transform:rotate(30deg);
-  transform-origin:top center;
-}
-
-.diagR{
-  width:3px;
-  height:2000px;
-  right:170px;
-  top:4px;
-  transform:rotate(-30deg);
-  transform-origin:top center;
-}
-
-.sa{
-  position:absolute;
-  width:70px;
-  min-height:40px;
-  border:1px solid var(--cellLine);
-  border-radius:12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  color:#111;
-  padding:5px 4px;
-  background:#f3f3f3;
-  z-index:2;
-}
-
-.sa .pct{
-  font-size:15px;
-  font-weight:900;
-  line-height:1.05;
-}
-
-.sa .count{
-  margin-top:3px;
-  font-size:10px;
-  font-weight:700;
-  color:#333;
-  line-height:1.1;
-}
-
-/* 5 3 1 */
-.sa5{ top:2px; left:80px; }
-.sa3{ top:50px; left: 142px; }
-.sa1{ top:2px; right:80px; }
-
-/* 6 4 2 */
-.sa6{ top:70px; left:24px; }
-.sa4{ top:130px; left:142px; }
-.sa2{ top:70px; right:24px; }
-
-.legend{
-  margin-top:10px;
-  font-size:11px;
-  color:#444;
-  text-align:center;
-  line-height:1.6;
-  word-break:break-word;
-}
-
-.footerSpace{
-  height:8px;
-}
-
-/* タブレット以下 */
-@media (max-width:600px){
-  .periodRow{
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .periodRow .col{
-    width:100%;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    font-size:14px;
-    padding:10px 8px;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-
-  .total{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .legend{
-    font-size:10px;
-  }
-}
-
-/* やや狭いスマホ */
-@media (max-width:390px){
-  body{
-    padding-left:8px;
-    padding-right:8px;
-  }
-
-  .app{
-    max-width:100%;
-  }
-
-  .seg{
-    gap:6px;
-  }
-
-  .seg button{
-    font-size:12px;
-    min-height:40px;
-    padding:8px 4px;
-  }
-
-  .seg4 button{
-    font-size:11px;
-    padding:8px 2px;
-  }
-
-  input, select{
-    font-size:15px;
-    padding:10px 10px;
-  }
-
-  .grid{
-    max-width:270px;
-    gap:6px;
-  }
-
-  .cell{
-    border-radius:12px;
-  }
-
-  .pct{
-    font-size:16px;
-  }
-
-  .count{
-    font-size:10px;
-  }
-
-  .shooterHalfWrap{
-    min-height:188px;
-    padding:4px 0 10px;
-  }
-
-  .shooterHalf{
-    transform:scale(.92);
-    transform-origin:top center;
-  }
-}
-
-/* かなり狭い端末 */
-@media (max-width:360px){
-  .title{
-    font-size:16px;
-  }
-
-  .card{
-    padding:10px;
-    border-radius:14px;
-  }
-
-  .seg{
-    gap:5px;
-  }
-
-  .seg button{
-    font-size:11px;
-    min-height:38px;
-    padding:7px 2px;
-  }
-
-  .seg4 button{
-    font-size:10px;
-  }
-
-  input, select{
-    min-height:44px;
-    font-size:14px;
-    padding:9px 8px;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    font-size:13px;
-    padding:9px 6px;
-  }
-
-  .grid{
-    max-width:255px;
-    gap:5px;
-  }
-
-  .pct{
-    font-size:15px;
-  }
-
-  .count{
-    font-size:9px;
-  }
-
-  .shooterHalfWrap{
-    min-height:176px;
-    padding:4px 0 10px;
-  }
-
-  .shooterHalf{
-    transform:scale(.86);
-    transform-origin:top center;
-  }
-
-  .legend{
-    font-size:9px;
-  }
-}
-
-/* 期間指定まわり */
-.periodRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-  width:100%;
-}
-
-.periodRow .col{
-  flex:1;
-  min-width:0;
-  width:100%;
-}
-
-.periodRow input{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-}
-
-/* スマホ対策 */
-@media (max-width:600px){
-  .periodRow{
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .periodRow .col{
-    width:100%;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    font-size:14px;
-    padding:10px 8px;
-    overflow:hidden;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-
-  .card{
-    overflow:hidden;
-  }
-}
-   
-
+      --navy:#0b1f44;
+      --navy2:#16356f;
+      --yellow:#ffd54a;
+      --bg:#f4f7fb;
+      --white:#fff;
+      --line:#d7deea;
+      --text:#14213d;
+      --muted:#667085;
+      --danger:#c62828;
+      --ok:#167c3a;
+      --card-shadow:0 10px 24px rgba(11,31,68,.08);
+    }
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+    html,body{
+      margin:0;
+      padding:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",sans-serif;
+    }
+    body{
+      padding:12px 12px 28px;
+    }
+    .app{
+      max-width:520px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .hero{
+      background:linear-gradient(135deg,var(--navy),var(--navy2));
+      color:#fff;
+      border-radius:20px;
+      padding:16px;
+      box-shadow:var(--card-shadow);
+    }
+    .hero h1{
+      margin:0 0 6px;
+      font-size:22px;
+    }
+    .hero p{
+      margin:0;
+      font-size:13px;
+      opacity:.92;
+    }
+    .card{
+      background:var(--white);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--card-shadow);
+      padding:14px;
+    }
+    .tabs{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+    }
+    .tabBtn{
+      border:none;
+      border-radius:12px;
+      padding:10px 8px;
+      background:#eaf0fa;
+      color:var(--navy);
+      font-weight:700;
+      cursor:pointer;
+    }
+    .tabBtn.active{
+      background:var(--navy);
+      color:#fff;
+    }
+    .tab{
+      display:none;
+    }
+    .tab.active{
+      display:block;
+    }
+    .sectionTitle{
+      margin:0 0 10px;
+      font-size:16px;
+      font-weight:800;
+      color:var(--navy);
+    }
+    .row{
+      display:grid;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .row.two{
+      grid-template-columns:1fr 1fr;
+    }
+    label{
+      display:block;
+      font-size:12px;
+      font-weight:700;
+      color:var(--muted);
+      margin-bottom:6px;
+    }
+    input,select,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:12px;
+      font-size:16px;
+      background:#fff;
+    }
+    textarea{
+      min-height:84px;
+      resize:vertical;
+    }
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:12px 14px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btnPrimary{
+      background:var(--navy);
+      color:#fff;
+    }
+    .btnSub{
+      background:#eef3fb;
+      color:var(--navy);
+    }
+    .btnDanger{
+      background:#fdecec;
+      color:var(--danger);
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+    }
+    .btnRow{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+    .chips{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+    .chips.two{
+      grid-template-columns:repeat(2,1fr);
+    }
+    .chip{
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--navy);
+      border-radius:14px;
+      padding:12px 8px;
+      font-size:15px;
+      font-weight:800;
+      text-align:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip.active{
+      background:var(--yellow);
+      border-color:#efc62c;
+    }
+    .status{
+      font-size:13px;
+      font-weight:700;
+      padding:10px 12px;
+      border-radius:12px;
+      background:#eef3fb;
+      color:var(--navy);
+    }
+    .status.ok{
+      background:#edf8f0;
+      color:var(--ok);
+    }
+    .status.ng{
+      background:#fdecec;
+      color:var(--danger);
+    }
+    .miniList{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-top:10px;
+    }
+    .miniItem{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      background:#fff;
+    }
+    .miniTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:4px;
+    }
+    .miniName{
+      font-weight:800;
+      color:var(--navy);
+    }
+    .badge{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:800;
+      background:#eef3fb;
+      color:var(--navy);
+    }
+    .badge.active{
+      background:#edf8f0;
+      color:var(--ok);
+    }
+    .badge.inactive{
+      background:#f3f4f6;
+      color:#667085;
+    }
+    .grid9{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+    .gridCell{
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      min-height:68px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:900;
+      color:var(--navy);
+      cursor:pointer;
+    }
+    .gridCell.active{
+      background:var(--yellow);
+      border-color:#efc62c;
+    }
+    .currentBox{
+      display:grid;
+      gap:8px;
+      background:#f8fbff;
+      border:1px dashed #bfd0ec;
+      border-radius:14px;
+      padding:12px;
+      margin-bottom:12px;
+      font-size:13px;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .small{
+      font-size:12px;
+    }
+    @media (max-width:480px){
+      .tabs{
+        grid-template-columns:repeat(2,1fr);
+      }
+      .row.two{
+        grid-template-columns:1fr;
+      }
+      .gridCell{
+        min-height:60px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="title">ゴーリーデータ</div>
+    <section class="hero">
+      <h1>Goalie Data App</h1>
+      <p>ゴーリー登録・メニュー登録・セッション作成・4ステップ入力</p>
+    </section>
 
-    <!-- Step 1 -->
-    <div class="card">
-      <label>1) ゴーリー名</label>
-      <select id="goalieSel">
-        <option value="">読み込み中…</option>
-      </select>
-    </div>
+    <section class="card">
+      <div class="tabs">
+        <button class="tabBtn active" data-tab="inputTab">入力</button>
+        <button class="tabBtn" data-tab="sessionTab">セッション</button>
+        <button class="tabBtn" data-tab="goalieTab">ゴーリー</button>
+        <button class="tabBtn" data-tab="menuTab">メニュー</button>
+      </div>
+    </section>
 
-    <!-- Step 2 -->
-    <div class="card">
-      <label>2) メニュー選択</label>
+    <div id="statusBox" class="status">読み込み中…</div>
 
-      <div class="seg" style="margin-bottom:10px;">
-        <button type="button" class="on" id="scopeAll">全体</button>
-        <button type="button" id="scopeCat">カテゴリー</button>
-        <button type="button" id="scopeMenu">メニュー</button>
+    <!-- 入力 -->
+    <section id="inputTab" class="card tab active">
+      <h2 class="sectionTitle">データ入力</h2>
+
+      <div class="currentBox">
+        <div><strong>入力者：</strong><span id="viewInputBy">未設定</span></div>
+        <div><strong>日付：</strong><span id="viewDate">未設定</span></div>
+        <div><strong>セッション：</strong><span id="viewSession">未選択</span></div>
+        <div><strong>ゴーリー：</strong><span id="viewGoalie">未選択</span></div>
       </div>
 
-      <div id="catBox" style="display:none;">
-        <label>カテゴリー</label>
-        <select id="catSel">
-          <option value="vs">対人メニュー</option>
-          <option value="shoot">シュー練メニュー</option>
-        </select>
-      </div>
-
-      <div id="menuBox" style="display:none; margin-top:10px;">
-        <label>メニュー名</label>
-        <select id="menuSel">
-          <option value="">読み込み中…</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Step 3 -->
-    <div class="card">
-      <label>3) 期間設定</label>
-
-      <div class="seg" style="margin-bottom:10px;">
-        <button type="button" class="on" id="modeDate">直近2ヶ月（日付）</button>
-        <button type="button" id="modeMonth">2ヶ月以前（月ごと）</button>
-      </div>
-
-      <div id="dateBox">
-        <div class="periodRow">
-          <div class="col">
-            <label>From</label>
-            <input id="fromDate" type="date" />
-          </div>
-          <div class="col">
-            <label>To</label>
-            <input id="toDate" type="date" />
-          </div>
-        </div>
-        <div class="hint" style="margin-top:8px;">日付指定は「今日から2ヶ月前〜今日」</div>
-      </div>
-
-      <div id="monthBox" style="display:none;">
-        <div class="periodRow">
-          <div class="col">
-            <label>From（月）</label>
-            <input id="fromMonth" type="month" />
-          </div>
-          <div class="col">
-            <label>To（月）</label>
-            <input id="toMonth" type="month" />
-          </div>
-        </div>
-        <div class="hint" style="margin-top:8px;">月ごと指定は「2ヶ月以前」のデータ向け（例：2025-10〜2025-12）</div>
-      </div>
-
-      <div style="margin-top:14px;">
-        <label>4) ゴーリー位置</label>
-
-        <div class="seg seg4">
-          <button type="button" class="on" id="posAll">全体</button>
-          <button type="button" id="posRight">左</button>
-          <button type="button" id="posCenter">中央</button>
-          <button type="button" id="posLeft">右</button>
-        </div>
-
-        <div class="hint" style="margin-top:8px;">
-          ゴーリーの立ち位置ごとに結果を絞り込みます
+      <div class="row">
+        <div>
+          <label for="inputBy">入力者名</label>
+          <input id="inputBy" type="text" placeholder="" />
         </div>
       </div>
 
-      <div style="margin-top:10px;">
-        <button class="btn" id="btnRun">結果を見る</button>
-      </div>
-
-      <div id="msg" class="hint" style="margin-top:10px;"></div>
-    </div>
-
-    <!-- Step 4 -->
-    <div class="card" id="resultCard" style="display:none;">
-      <div class="hint">5) 結果（セーブ率 = セーブ / (セーブ + 成功)）</div>
-
-      <div class="resultPanel">
-        <div class="total" id="totalBox"></div>
-
-        <div class="hint" style="margin-top:10px;">コース別セーブ率</div>
-        <div class="grid" id="grid"></div>
-      </div>
-
-      <div class="resultPanel">
-        <div class="hint">シューターエリア別セーブ率</div>
-
-        <div class="shooterHalfWrap">
-          <div class="shooterHalf" id="shooterHalf">
-            <div class="line diagL"></div>
-            <div class="line diagR"></div>
-            <div class="line midLine"></div>
-        
-            <div class="sa sa5" id="area5box">
-              <div class="pct" id="areaPct5">—</div>
-              <div class="count" id="areaCnt5">0/0</div>
-            </div>
-        
-            <div class="sa sa3" id="area3box">
-              <div class="pct" id="areaPct3">—</div>
-              <div class="count" id="areaCnt3">0/0</div>
-            </div>
-        
-            <div class="sa sa1" id="area1box">
-              <div class="pct" id="areaPct1">—</div>
-              <div class="count" id="areaCnt1">0/0</div>
-            </div>
-        
-            <div class="sa sa6" id="area6box">
-              <div class="pct" id="areaPct6">—</div>
-              <div class="count" id="areaCnt6">0/0</div>
-            </div>
-        
-            <div class="sa sa4" id="area4box">
-              <div class="pct" id="areaPct4">—</div>
-              <div class="count" id="areaCnt4">0/0</div>
-            </div>
-        
-            <div class="sa sa2" id="area2box">
-              <div class="pct" id="areaPct2">—</div>
-              <div class="count" id="areaCnt2">0/0</div>
-            </div>
-          </div>
+      <div class="row two">
+        <div>
+          <label for="dateInput">日付</label>
+          <input id="dateInput" type="date" />
         </div>
-
-        <div class="legend" id="shooterLegend"></div>
+        <div>
+          <label for="sessionSelect">セッション</label>
+          <select id="sessionSelect"></select>
+        </div>
       </div>
-    </div>
 
-    <div class="footerSpace"></div>
+      <div class="row">
+        <div>
+          <label for="goalieSelect">ゴーリー</label>
+          <select id="goalieSelect"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>① ゴーリー位置</label>
+        <div class="chips" id="goaliePosChips">
+          <button class="chip" data-value="L">左</button>
+          <button class="chip" data-value="C">中央</button>
+          <button class="chip" data-value="R">右</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>② シューターエリア</label>
+        <div class="chips" id="shooterAreaChips">
+          <button class="chip" data-value="5">5</button>
+          <button class="chip" data-value="3">3</button>
+          <button class="chip" data-value="1">1</button>
+          <button class="chip" data-value="6">6</button>
+          <button class="chip" data-value="4">4</button>
+          <button class="chip" data-value="2">2</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>③ 結果</label>
+        <div class="chips two" id="resultChips">
+          <button class="chip" data-value="goal">成功</button>
+          <button class="chip" data-value="save">セーブ</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>④ コース（1〜9）</label>
+        <div class="grid9" id="courseGrid">
+          <button class="gridCell" data-value="1">1</button>
+          <button class="gridCell" data-value="2">2</button>
+          <button class="gridCell" data-value="3">3</button>
+          <button class="gridCell" data-value="4">4</button>
+          <button class="gridCell" data-value="5">5</button>
+          <button class="gridCell" data-value="6">6</button>
+          <button class="gridCell" data-value="7">7</button>
+          <button class="gridCell" data-value="8">8</button>
+          <button class="gridCell" data-value="9">9</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="shotNote">メモ（任意）</label>
+          <input id="shotNote" type="text" placeholder="任意メモ" />
+        </div>
+      </div>
+
+      <div class="btnRow">
+        <button id="sendBtn" class="btn btnPrimary">送信</button>
+        <button id="undoBtn" class="btn btnDanger">直前取り消し</button>
+      </div>
+
+      <div class="miniList" id="recentShots"></div>
+    </section>
+
+    <!-- セッション -->
+    <section id="sessionTab" class="card tab">
+      <h2 class="sectionTitle">セッション作成</h2>
+
+      <div class="row two">
+        <div>
+          <label for="sessionDate">日付</label>
+          <input id="sessionDate" type="date" />
+        </div>
+        <div>
+          <label for="sessionMenu">メニュー</label>
+          <select id="sessionMenu"></select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="sessionTitle">セッション名</label>
+          <input id="sessionTitle" type="text" placeholder="例：午前練習 / 6on6 / 1on1" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="sessionNote">メモ</label>
+          <textarea id="sessionNote" placeholder="任意"></textarea>
+        </div>
+      </div>
+
+      <button id="createSessionBtn" class="btn btnPrimary">セッション作成</button>
+      <div class="miniList" id="sessionList"></div>
+    </section>
+
+    <!-- ゴーリー -->
+    <section id="goalieTab" class="card tab">
+      <h2 class="sectionTitle">ゴーリー管理</h2>
+
+      <div class="row">
+        <div>
+          <label for="goalieName">ゴーリー名</label>
+          <input id="goalieName" type="text" placeholder="名前を入力" />
+        </div>
+      </div>
+
+      <button id="addGoalieBtn" class="btn btnPrimary">追加</button>
+      <div class="miniList" id="goalieList"></div>
+    </section>
+
+    <!-- メニュー -->
+    <section id="menuTab" class="card tab">
+      <h2 class="sectionTitle">メニュー管理</h2>
+
+      <div class="row two">
+        <div>
+          <label for="menuName">メニュー名</label>
+          <input id="menuName" type="text" placeholder="例：6on6" />
+        </div>
+        <div>
+          <label for="groupType">種別</label>
+          <select id="groupType">
+            <option value="対人">対人</option>
+            <option value="シュー練">シュー練</option>
+          </select>
+        </div>
+      </div>
+
+      <button id="addMenuBtn" class="btn btnPrimary">追加</button>
+      <div class="miniList" id="menuList"></div>
+    </section>
   </div>
 
-<script>
-  // ====== ここだけ必要に応じて差し替え ======
-  const SERVICE_URL = "https://script.google.com/macros/s/AKfycbwHdYfkDlZX6CWnv9tN2NxH8Hhg15F07mfEChnQBJm8JtATw78De9Z4e_3-NYCX7Rbrdw/exec";
-  // ========================================
+  <script>
+    const SERVICE_URL = 'https://script.google.com/macros/s/AKfycbyPA_S0AAhpDav-4aDNUr5fYe07ZhSGjVJ50PX4lIMrNhC1uo5E4o4dvw4y4ntun05c/exec';
 
-  let scope = "ALL";         // ALL | CATEGORY | MENU
-  let periodMode = "DATE";   // DATE | MONTH
-  let goaliePosScope = "ALL"; // ALL | LEFT | CENTER | RIGHT
-  let menus = [];
-  let goalies = [];
+    const state = {
+      goalies: [],
+      menus: [],
+      sessions: [],
+      selectedGoaliePos: '',
+      selectedShooterArea: '',
+      selectedResult: '',
+      selectedCourse9: '',
+    };
 
-  const $ = (id) => document.getElementById(id);
+    const $ = (id) => document.getElementById(id);
 
-  function showMsg(text, type="") {
-    const el = $("msg");
-    el.className = "hint " + (type==="ok" ? "ok" : type==="err" ? "err" : "");
-    el.textContent = text || "";
-  }
-
-  function ymd(d){
-    const y=d.getFullYear();
-    const m=("0"+(d.getMonth()+1)).slice(-2);
-    const dd=("0"+d.getDate()).slice(-2);
-    return `${y}-${m}-${dd}`;
-  }
-
-  function ym(d){
-    const y=d.getFullYear();
-    const m=("0"+(d.getMonth()+1)).slice(-2);
-    return `${y}-${m}`;
-  }
-
-  function clampDateInputsTo2Months(){
-    const today = new Date();
-    const from = new Date(today.getFullYear(), today.getMonth()-2, today.getDate());
-    $("fromDate").value = ymd(from);
-    $("toDate").value = ymd(today);
-    $("fromDate").max = ymd(today);
-    $("toDate").max = ymd(today);
-  }
-
-  function rateClass(rate){
-    if (rate === null) return "";
-    const p = rate * 100;
-    if (p < 10) return "r0";
-    if (p < 30) return "r10";
-    if (p < 50) return "r30";
-    if (p < 70) return "r50";
-    return "r70";
-  }
-
-  function rateColor(rate){
-    if (rate == null) return "#f3f3f3";
-    const p = rate * 100;
-    if (p < 10) return "#f8bcbc";
-    if (p < 30) return "#f6d6a8";
-    if (p < 50) return "#fff1a8";
-    if (p < 70) return "#cfe9b6";
-    return "#8fd19e";
-  }
-
-  function formatPct(rate){
-    return (rate == null) ? "—" : `${Math.round(rate * 100)}%`;
-  }
-
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, (c)=>({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[c]));
-  }
-
-  async function apiGet(params){
-    const u = new URL(SERVICE_URL);
-    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k, v));
-    const res = await fetch(u.toString(), { method:"GET" });
-    const text = await res.text();
-    try {
-      return JSON.parse(text);
-    } catch(e){
-      throw new Error("JSON parse failed: " + text.slice(0,120));
+    function setStatus(msg, type=''){
+      const el = $('statusBox');
+      el.textContent = msg;
+      el.className = 'status' + (type ? ' ' + type : '');
     }
-  }
 
-  async function loadMasters(){
-    const g = await apiGet({ action:"listGoalies" });
-    if (!g.ok) throw new Error(g.error || "listGoalies failed");
-    goalies = g.goalies || [];
-
-    const gs = $("goalieSel");
-    gs.innerHTML =
-      `<option value="">選択してください</option>` +
-      goalies.map(x => `<option value="${x.goalieId}">${escapeHtml(x.name)}</option>`).join("");
-
-    const m = await apiGet({ action:"listMenus" });
-    if (!m.ok) throw new Error(m.error || "listMenus failed");
-    menus = m.menus || [];
-
-    const ms = $("menuSel");
-    ms.innerHTML =
-      `<option value="">選択してください</option>` +
-      menus.map(x => `<option value="${x.menuId}">${escapeHtml(x.menuName)}（${escapeHtml(x.groupType)}）</option>`).join("");
-  }
-
-  function setScope(next){
-    scope = next;
-    $("scopeAll").classList.toggle("on", scope==="ALL");
-    $("scopeCat").classList.toggle("on", scope==="CATEGORY");
-    $("scopeMenu").classList.toggle("on", scope==="MENU");
-    $("catBox").style.display  = (scope==="CATEGORY") ? "" : "none";
-    $("menuBox").style.display = (scope==="MENU") ? "" : "none";
-  }
-
-  function setGoaliePosScope(next){
-    goaliePosScope = next;
-
-    $("posAll").classList.toggle("on", goaliePosScope==="ALL");
-    $("posLeft").classList.toggle("on", goaliePosScope==="LEFT");
-    $("posCenter").classList.toggle("on", goaliePosScope==="CENTER");
-    $("posRight").classList.toggle("on", goaliePosScope==="RIGHT");
-  }
-
-  function setPeriodMode(next){
-    periodMode = next;
-    $("modeDate").classList.toggle("on", periodMode==="DATE");
-    $("modeMonth").classList.toggle("on", periodMode==="MONTH");
-    $("dateBox").style.display  = (periodMode==="DATE") ? "" : "none";
-    $("monthBox").style.display = (periodMode==="MONTH") ? "" : "none";
-  }
-
-  async function runSummary(){
-    try{
-      showMsg("集計中…");
-      $("resultCard").style.display = "none";
-
-      const goalieId = $("goalieSel").value;
-      if (!goalieId) return showMsg("ゴーリー名を選択してください", "err");
-
-      let from="", to="";
-      if (periodMode==="DATE"){
-        from = $("fromDate").value;
-        to   = $("toDate").value;
-        if (!from || !to) return showMsg("日付（From/To）を入れてください", "err");
-      } else {
-        from = $("fromMonth").value;
-        to   = $("toMonth").value;
-        if (!from || !to) return showMsg("月（From/To）を入れてください", "err");
-      }
-
-      const params = {
-        action:"summary9",
-        goalieId,
-        menuScope: scope,
-        periodMode,
-        goaliePosScope,
-        from, to
-      };
-
-      if (scope==="CATEGORY"){
-        params.groupType = $("catSel").value;
-      }
-
-      if (scope==="MENU"){
-        const menuId = $("menuSel").value;
-        if (!menuId) return showMsg("メニュー名を選択してください", "err");
-        params.menuId = menuId;
-      }
-
-      const json = await apiGet(params);
-      if (!json.ok) throw new Error(json.error || "summary failed");
-
-      renderSummary(json);
-      showMsg("表示しました", "ok");
-    }catch(e){
-      console.error(e);
-      showMsg("エラー: " + (e.message || e), "err");
+    function todayStr(){
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
     }
-  }
 
-  function renderSummary(json){
-    const total = json.total || {};
-    const totalRate = formatPct(total.rate);
+    function apiJsonp(params = {}){
+      return new Promise((resolve, reject) => {
+        const callbackName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        params.callback = callbackName;
 
-    $("totalBox").innerHTML = `
-      <div>合計セーブ率：${totalRate}</div>
-      <div>${total.saves||0} / ${total.denom||0}</div>
-    `;
+        const query = new URLSearchParams(params).toString();
+        const script = document.createElement('script');
+        script.src = `${SERVICE_URL}?${query}`;
 
-    // 3x3
-    const g = json.grid || {};
-    const cells = [];
+        let done = false;
+        const cleanup = () => {
+          done = true;
+          try { delete window[callbackName]; } catch(e){}
+          if (script.parentNode) script.parentNode.removeChild(script);
+        };
 
-    for (let i=1; i<=9; i++){
-      const cell = g[i] || {};
-      const rate = (cell.rate == null) ? null : cell.rate;
-      const pct  = formatPct(rate);
-      const cls  = rateClass(rate);
+        window[callbackName] = (data) => {
+          cleanup();
+          resolve(data);
+        };
 
-      cells.push(`
-        <div class="cell ${cls}">
-          <div class="pct">${pct}</div>
-          <div class="count">${cell.saves||0}/${cell.denom||0}</div>
+        script.onerror = () => {
+          cleanup();
+          reject(new Error('通信に失敗しました'));
+        };
+
+        document.body.appendChild(script);
+
+        setTimeout(() => {
+          if (!done) {
+            cleanup();
+            reject(new Error('タイムアウトしました'));
+          }
+        }, 12000);
+      });
+    }
+
+    function setChipGroup(containerId, value){
+      const wrap = $(containerId);
+      [...wrap.querySelectorAll('[data-value]')].forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.value === value);
+      });
+    }
+
+    function bindChipGroup(containerId, onPick){
+      const wrap = $(containerId);
+      wrap.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-value]');
+        if(!btn) return;
+        onPick(btn.dataset.value);
+      });
+    }
+
+    function renderGoalies(){
+      const activeGoalies = state.goalies.filter(g => String(g.status) === 'active');
+      const goalieSelect = $('goalieSelect');
+      goalieSelect.innerHTML = activeGoalies.length
+        ? activeGoalies.map(g => `<option value="${g.goalieId}">${escapeHtml(g.name)}</option>`).join('')
+        : `<option value="">ゴーリー未登録</option>`;
+
+      const list = $('goalieList');
+      list.innerHTML = state.goalies.length ? state.goalies.map(g => `
+        <div class="miniItem">
+          <div class="miniTop">
+            <div class="miniName">${escapeHtml(g.name)}</div>
+            <span class="badge ${g.status === 'active' ? 'active' : 'inactive'}">${g.status}</span>
+          </div>
+          <div class="small muted">${escapeHtml(g.goalieId || '')}</div>
+          <div style="margin-top:8px;">
+            <button class="btn btnSub small" onclick="toggleGoalie('${g.goalieId}','${g.status === 'active' ? 'inactive' : 'active'}')">
+              ${g.status === 'active' ? '非表示にする' : '表示に戻す'}
+            </button>
+          </div>
         </div>
-      `);
+      `).join('') : `<div class="muted">まだ登録がありません</div>`;
+
+      updateCurrentBox();
     }
-    $("grid").innerHTML = cells.join("");
 
-    // shooter area
-    const shooter = json.shooterArea || {};
-    [1,2,3,4,5,6].forEach(n=>{
-      const cell = shooter[n] || {};
-      const rate = (cell.rate == null) ? null : cell.rate;
-      const saves = cell.saves || 0;
-      const denom = cell.denom || 0;
-      
-      const boxEl = document.getElementById(`area${n}box`);
-      const pctEl = document.getElementById(`areaPct${n}`);
-      const cntEl = document.getElementById(`areaCnt${n}`);
-      
-      if (boxEl) boxEl.style.background = rateColor(rate);
-      if (pctEl) pctEl.textContent = formatPct(rate);
-      if (cntEl) cntEl.textContent = `${saves}/${denom}`;
-    });
+    function renderMenus(){
+        const activeMenus = state.menus.filter(m => isTruthyActive(m.isActive));
 
-    const order = [5,3,1,6,4,2];
-    $("shooterLegend").textContent = order.map(n=>{
-      const cell = shooter[n] || {};
-      return `エリア${n}: ${formatPct(cell.rate == null ? null : cell.rate)} (${cell.saves||0}/${cell.denom||0})`;
-    }).join(" ｜ ");
+  $('sessionMenu').innerHTML = activeMenus.length
+    ? activeMenus.map(m => `<option value="${m.menuId}">${escapeHtml(m.menuName)}</option>`).join('')
+    : `<option value="">メニュー未登録</option>`;
+    const list = $('menuList');
+    list.innerHTML = state.menus.length ? state.menus.map(m => {
+        const active = isTruthyActive(m.isActive);
+        return `
+        <div class="miniItem">
+            <div class="miniTop">
+                <div class="miniName">${escapeHtml(m.menuName)}</div>
+                <span class="badge ${active ? 'active' : 'inactive'}">${active ? 'active' : 'inactive'}</span>
+                </div>
+                <div class="small muted">${escapeHtml(m.groupType || '')}</div>
+                <div style="margin-top:8px;">
+                    <button
+                    type="button"
+                    class="btn btnSub small"
+                    onclick="toggleMenu('${m.menuId}','${active ? 'false' : 'true'}')">
+                    ${active ? '非表示にする' : '表示に戻す'}
+                    </button>
+                  </div>
+                </div>
+                `;
+            }).join('') : `<div class="muted">まだ登録がありません</div>`;
+        }
 
-    $("resultCard").style.display = "";
+        function renderSessions(selectedSessionId = ''){
+  const sessions = state.sessions || [];
+  const sessionSelect = $('sessionSelect');
+
+  sessionSelect.innerHTML = sessions.length
+    ? sessions.map(s => {
+        const menu = state.menus.find(m => m.menuId === s.menuId);
+        const menuName = menu ? menu.menuName : s.menuId;
+        return `<option value="${s.sessionId}" data-menuid="${s.menuId}">
+          ${escapeHtml(s.title)} / ${escapeHtml(menuName)}
+        </option>`;
+      }).join('')
+    : `<option value="">先にセッションを作成してください</option>`;
+
+  if (sessions.length) {
+    const keepId =
+      selectedSessionId ||
+      sessionSelect.dataset.pendingSessionId ||
+      sessionSelect.value ||
+      '';
+
+    const exists = sessions.some(s => s.sessionId === keepId);
+
+    if (exists) {
+      sessionSelect.value = keepId;
+    } else {
+      sessionSelect.selectedIndex = 0;
+    }
   }
 
-  $("scopeAll").addEventListener("click", ()=>setScope("ALL"));
-  $("scopeCat").addEventListener("click", ()=>setScope("CATEGORY"));
-  $("scopeMenu").addEventListener("click", ()=>setScope("MENU"));
-  $("modeDate").addEventListener("click", ()=>setPeriodMode("DATE"));
-  $("modeMonth").addEventListener("click", ()=>setPeriodMode("MONTH"));
-  $("posAll").addEventListener("click", ()=>setGoaliePosScope("ALL"));
-  $("posLeft").addEventListener("click", ()=>setGoaliePosScope("LEFT"));
-  $("posCenter").addEventListener("click", ()=>setGoaliePosScope("CENTER"));
-  $("posRight").addEventListener("click", ()=>setGoaliePosScope("RIGHT"));
-  $("btnRun").addEventListener("click", runSummary);
+  sessionSelect.dataset.pendingSessionId = '';
 
-  (async function init(){
-    clampDateInputsTo2Months();
+  $('sessionList').innerHTML = state.sessions.length
+    ? state.sessions.map(s => {
+        const menu = state.menus.find(m => m.menuId === s.menuId);
+        const menuName = menu ? menu.menuName : s.menuId;
+        return `
+          <div class="miniItem">
+            <div class="miniTop">
+              <div class="miniName">${escapeHtml(s.title)}</div>
+              <span class="badge">${escapeHtml(s.date)}</span>
+            </div>
+            <div class="small muted">${escapeHtml(menuName)}</div>
+          </div>
+        `;
+      }).join('')
+    : `<div class="muted">まだセッションがありません</div>`;
 
-    const today = new Date();
-    const fm = new Date(today.getFullYear(), today.getMonth()-4, 1);
-    const tm = new Date(today.getFullYear(), today.getMonth()-3, 1);
-    $("fromMonth").value = ym(fm);
-    $("toMonth").value = ym(tm);
+  updateCurrentBox();
+  loadRecentShots();
+}
 
-    try{
-      showMsg("マスタ読み込み中…");
-      await loadMasters();
-      showMsg("準備OK。条件を選んで「結果を見る」", "ok");
-    }catch(e){
-      console.error(e);
-      showMsg("マスタ取得に失敗: " + (e.message||e) + "（listGoalies/listMenus が未実装ならGAS側に追加が必要）", "err");
+
+    function updateCurrentBox(){
+      const inputBy = $('inputBy').value.trim() || '未設定';
+      const date = $('dateInput').value || '未設定';
+
+      const sessionId = $('sessionSelect').value;
+      const session = state.sessions.find(s => s.sessionId === sessionId);
+      const sessionText = session ? `${session.title} (${session.date})` : '未選択';
+
+      const goalieId = $('goalieSelect').value;
+      const goalie = state.goalies.find(g => g.goalieId === goalieId);
+      const goalieText = goalie ? goalie.name : '未選択';
+
+      $('viewInputBy').textContent = inputBy;
+      $('viewDate').textContent = date;
+      $('viewSession').textContent = sessionText;
+      $('viewGoalie').textContent = goalieText;
     }
-  })();
-</script>
+
+    async function loadGoalies(){
+      const res = await apiJsonp({ action:'getGoalies' });
+      if(!res.ok) throw new Error(res.error || 'getGoalies failed');
+      state.goalies = res.items || [];
+      renderGoalies();
+    }
+
+    async function loadMenus(){
+      const res = await apiJsonp({ action:'getMenus' });
+      if(!res.ok) throw new Error(res.error || 'getMenus failed');
+      state.menus = res.items || [];
+      renderMenus();
+    }
+
+    async function loadSessions(date='', selectedSessionId = ''){
+      const res = await apiJsonp({ action:'getSessions', date: date || '' });
+      if(!res.ok) throw new Error(res.error || 'getSessions failed');
+      state.sessions = res.items || [];
+      renderSessions(selectedSessionId);
+    }
+
+    async function loadRecentShots(){
+      const sessionId = $('sessionSelect').value;
+      if(!sessionId){
+        $('recentShots').innerHTML = '';
+        return;
+      }
+      const res = await apiJsonp({ action:'getRecentShots', sessionId, limit:10 });
+      if(!res.ok){
+        $('recentShots').innerHTML = '';
+        return;
+      }
+      const items = res.items || [];
+      $('recentShots').innerHTML = items.length ? items.map(s => `
+        <div class="miniItem">
+          <div class="miniTop">
+            <div class="miniName">${escapeHtml(s.result)} / ${escapeHtml(s.course9)}</div>
+            <span class="badge">${escapeHtml(s.timestamp || '')}</span>
+          </div>
+          <div class="small muted">
+            位置:${escapeHtml(s.goaliePos)} / エリア:${escapeHtml(s.shooterArea)} / 入力:${escapeHtml(s.inputBy || '')}
+          </div>
+        </div>
+      `).join('') : `<div class="muted">まだ入力がありません</div>`;
+    }
+
+    async function addGoalie(){
+      const name = $('goalieName').value.trim();
+      if(!name){
+        setStatus('ゴーリー名を入力してください', 'ng');
+        return;
+      }
+      setStatus('ゴーリーを追加しています…');
+      try{
+        const res = await apiJsonp({ action:'addGoalie', name });
+        if(!res.ok) throw new Error(res.error || '追加に失敗しました');
+        $('goalieName').value = '';
+        await loadGoalies();
+        setStatus('ゴーリーを追加しました', 'ok');
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }
+    }
+
+    async function toggleGoalie(goalieId, status){
+      try{
+        const res = await apiJsonp({ action:'toggleGoalieStatus', goalieId, status });
+        if(!res.ok) throw new Error(res.error || '更新に失敗しました');
+        await loadGoalies();
+        setStatus('ゴーリー表示状態を更新しました', 'ok');
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }
+    }
+    window.toggleGoalie = toggleGoalie;
+
+    async function addMenu(){
+      const menuName = $('menuName').value.trim();
+      const groupType = $('groupType').value;
+      if(!menuName){
+        setStatus('メニュー名を入力してください', 'ng');
+        return;
+      }
+      setStatus('メニューを追加しています…');
+      try{
+        const res = await apiJsonp({ action:'addMenu', menuName, groupType });
+        if(!res.ok) throw new Error(res.error || '追加に失敗しました');
+        $('menuName').value = '';
+        await loadMenus();
+        setStatus('メニューを追加しました', 'ok');
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }
+    }
+
+    async function toggleMenu(menuId, isActive){
+        try{
+            const res = await apiJsonp({ action:'toggleMenuActive', menuId, isActive });
+            if(!res.ok) throw new Error(res.error || '更新に失敗しました');
+            await loadMenus();
+            await loadSessions($('dateInput').value);
+            
+            renderMenus();
+            renderSessions();
+            
+            setStatus('メニュー表示状態を更新しました', 'ok');
+        }catch(err){
+            setStatus(err.message, 'ng');
+        }
+    }
+    window.toggleMenu = toggleMenu;
+
+    async function createSession(){
+      const date = $('sessionDate').value;
+      const menuId = $('sessionMenu').value;
+      const title = $('sessionTitle').value.trim();
+      const note = $('sessionNote').value.trim();
+
+      if(!date){
+        setStatus('日付を入力してください', 'ng');
+        return;
+      }
+      if(!menuId){
+        setStatus('メニューを選択してください', 'ng');
+        return;
+      }
+      if(!title){
+        setStatus('セッション名を入力してください', 'ng');
+        return;
+      }
+
+      setStatus('セッションを作成しています…');
+      try{
+        const res = await apiJsonp({ action:'createSession', date, menuId, title, note });
+        if(!res.ok) throw new Error(res.error || '作成に失敗しました');
+
+        $('sessionDate').value = date;
+        $('dateInput').value = date;
+
+        $('sessionTitle').value = '';
+        $('sessionNote').value = '';
+
+        $('dateInput').value = date;
+        $('sessionSelect').dataset.pendingSessionId = res.sessionId;
+        await loadSessions(date, res.sessionId);
+        updateCurrentBox();
+        await loadRecentShots();
+
+        setStatus('セッションを作成しました', 'ok');
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }
+    }
+
+    function resetSteps(){
+      state.selectedGoaliePos = '';
+      state.selectedShooterArea = '';
+      state.selectedResult = '';
+      state.selectedCourse9 = '';
+      setChipGroup('goaliePosChips', '');
+      setChipGroup('shooterAreaChips', '');
+      setChipGroup('resultChips', '');
+      [...$('courseGrid').querySelectorAll('.gridCell')].forEach(el => el.classList.remove('active'));
+      $('shotNote').value = '';
+    }
+
+    async function sendShot(){
+      const inputBy = $('inputBy').value.trim();
+      const date = $('dateInput').value;
+      const sessionId = $('sessionSelect').value;
+      const session = state.sessions.find(s => s.sessionId === sessionId);
+      const menuId = session ? session.menuId : '';
+      const goalieId = $('goalieSelect').value;
+      const note = $('shotNote').value.trim();
+
+      if(!inputBy){
+        setStatus('入力者名を入力してください', 'ng');
+        return;
+      }
+      if(!date){
+        setStatus('日付を入力してください', 'ng');
+        return;
+      }
+      if(!sessionId){
+        setStatus('セッションを選択してください', 'ng');
+        return;
+      }
+      if(!goalieId){
+        setStatus('ゴーリーを選択してください', 'ng');
+        return;
+      }
+      if(!state.selectedGoaliePos){
+        setStatus('ゴーリー位置を選択してください', 'ng');
+        return;
+      }
+      if(!state.selectedShooterArea){
+        setStatus('シューターエリアを選択してください', 'ng');
+        return;
+      }
+      if(!state.selectedResult){
+        setStatus('結果を選択してください', 'ng');
+        return;
+      }
+      if(!state.selectedCourse9){
+        setStatus('コースを選択してください', 'ng');
+        return;
+      }
+
+      $('sendBtn').disabled = true;
+      setStatus('送信しています…');
+
+      try{
+        const res = await apiJsonp({
+          action:'addShot',
+          date,
+          sessionId,
+          menuId,
+          goalieId,
+          goaliePos: state.selectedGoaliePos,
+          shooterArea: state.selectedShooterArea,
+          result: state.selectedResult,
+          course9: state.selectedCourse9,
+          inputBy,
+          note
+        });
+
+        if(!res.ok) throw new Error(res.error || '送信に失敗しました');
+
+        await loadRecentShots();
+        setStatus(`送信OK（${res.shotId}）`, 'ok');
+        resetSteps();
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }finally{
+        $('sendBtn').disabled = false;
+      }
+    }
+
+    async function undoLast(){
+      const sessionId = $('sessionSelect').value;
+      const inputBy = $('inputBy').value.trim() || 'unknown';
+
+      if(!sessionId){
+        setStatus('セッションを選択してください', 'ng');
+        return;
+      }
+
+      setStatus('直前データを取り消しています…');
+      try{
+        const res = await apiJsonp({
+          action:'undoLastShot',
+          sessionId,
+          deletedBy: inputBy
+        });
+        if(!res.ok) throw new Error(res.error || '取り消しに失敗しました');
+        await loadRecentShots();
+        setStatus('直前データを取り消しました', 'ok');
+      }catch(err){
+        setStatus(err.message, 'ng');
+      }
+    }
+
+    function escapeHtml(str){
+      return String(str ?? '')
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'","&#39;");
+    }
+
+    function isTruthyActive(v){
+        const s = String(v ?? '').trim().toLowerCase();
+        return s === 'true' || s === 'active' || s === '1' || s === 'yes';
+    }
+
+    function bindTabs(){
+      document.querySelectorAll('.tabBtn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tabBtn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          btn.classList.add('active');
+          $(btn.dataset.tab).classList.add('active');
+        });
+      });
+    }
+
+    function bindEvents(){
+      bindChipGroup('goaliePosChips', (v) => {
+        state.selectedGoaliePos = v;
+        setChipGroup('goaliePosChips', v);
+      });
+
+      bindChipGroup('shooterAreaChips', (v) => {
+        state.selectedShooterArea = v;
+        setChipGroup('shooterAreaChips', v);
+      });
+
+      bindChipGroup('resultChips', (v) => {
+        state.selectedResult = v;
+        setChipGroup('resultChips', v);
+      });
+
+      $('courseGrid').addEventListener('click', (e) => {
+        const btn = e.target.closest('.gridCell');
+        if(!btn) return;
+        state.selectedCourse9 = btn.dataset.value;
+        [...$('courseGrid').querySelectorAll('.gridCell')].forEach(el => {
+          el.classList.toggle('active', el.dataset.value === state.selectedCourse9);
+        });
+      });
+
+      $('addGoalieBtn').addEventListener('click', addGoalie);
+      $('addMenuBtn').addEventListener('click', addMenu);
+      $('createSessionBtn').addEventListener('click', createSession);
+      $('sendBtn').addEventListener('click', sendShot);
+      $('undoBtn').addEventListener('click', undoLast);
+
+      $('dateInput').addEventListener('change', async () => {
+        updateCurrentBox();
+        await loadSessions($('dateInput').value);
+      });
+      $('sessionSelect').addEventListener('change', async () => {
+        updateCurrentBox();
+        await loadRecentShots();
+      });
+      $('goalieSelect').addEventListener('change', updateCurrentBox);
+      $('inputBy').addEventListener('input', updateCurrentBox);
+
+      $('sessionDate').addEventListener('change', () => {
+        if(!$('dateInput').value) $('dateInput').value = $('sessionDate').value;
+      });
+    }
+
+    async function init(){
+      bindTabs();
+      bindEvents();
+
+      $('dateInput').value = todayStr();
+      $('sessionDate').value = todayStr();
+
+      try{
+        setStatus('初期読み込み中…');
+        await apiJsonp({ action:'ping' });
+        await loadGoalies();
+        await loadMenus();
+        await loadSessions(todayStr(), '');
+        updateCurrentBox();
+        setStatus('準備完了', 'ok');
+      }catch(err){
+        setStatus(err.message || '初期化に失敗しました', 'ng');
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
