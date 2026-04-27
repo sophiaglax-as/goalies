@@ -4,563 +4,383 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Goalie Data | 集計閲覧</title>
+
   <style>
     :root{
-  --bg:#0b1b3a;
-  --card:rgba(255,255,255,.08);
-  --card2:rgba(255,255,255,.12);
-  --text:#fff;
-  --muted:rgba(255,255,255,.72);
-  --line:rgba(255,255,255,.15);
-  --btn:#ffd400;
-  --btnText:#111;
-  --danger:#ff6b6b;
-  --ok:#59d38a;
-
-  --panelBg:#fff;
-  --panelLine:#d8d8d8;
-  --cellLine:#cfcfcf;
-  --textDark:#111;
-  --textSub:#444;
-}
-
-*{ box-sizing:border-box; }
-
-html, body{
-  margin:0;
-  padding:0;
-}
-
-body{
-  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  -webkit-text-size-adjust:100%;
-  padding:10px 10px 24px;
-}
-
-.app{
-  width:100%;
-  max-width:420px;
-  margin:0 auto;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.title{
-  font-size:17px;
-  font-weight:800;
-  letter-spacing:.02em;
-  padding:2px 2px 0;
-}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-}
-
-.row{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-}
-
-.col{
-  flex:1;
-  min-width:0;
-}
-
-label{
-  display:block;
-  font-size:12px;
-  color:var(--muted);
-  margin:0 0 6px;
-}
-
-input, select, button{
-  font:inherit;
-}
-
-input, select{
-  width:100%;
-  min-height:46px;
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.18);
-  color:var(--text);
-  font-size:16px;
-  outline:none;
-}
-
-.seg{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-}
-
-.seg button{
-  min-height:42px;
-  padding:8px 8px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:rgba(0,0,0,.18);
-  color:var(--text);
-  font-size:13px;
-  font-weight:800;
-  white-space:nowrap;
-}
-
-.seg button.on{
-  background:var(--btn);
-  color:var(--btnText);
-  border-color:transparent;
-}
-
-.seg4{
-  grid-template-columns: repeat(4, 1fr);
-}
-
-@media (max-width: 360px){
-  .seg4{
-    gap:6px;
-  }
-
-  .seg4 button{
-    font-size:11px;
-    padding:8px 2px;
-  }
-}
-
-.btn{
-  width:100%;
-  min-height:48px;
-  padding:12px 14px;
-  border-radius:14px;
-  border:none;
-  background:var(--btn);
-  color:var(--btnText);
-  font-size:16px;
-  font-weight:900;
-}
-
-.hint{
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.5;
-}
-
-.ok{ color:var(--ok); font-weight:800; }
-.err{ color:var(--danger); font-weight:800; }
-
-/* 結果カード */
-.resultPanel{
-  background:var(--panelBg);
-  border-radius:16px;
-  padding:12px;
-  border:1px solid var(--panelLine);
-  margin-top:10px;
-}
-
-.resultPanel .hint{
-  color:var(--textSub);
-}
-
-/* 合計 */
-.total{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px;
-  border-radius:14px;
-  background:#fff;
-  color:var(--textDark);
-  border:1px solid var(--cellLine);
-  margin-top:2px;
-  font-weight:800;
-  font-size:14px;
-}
-
-/* 3x3 */
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  width:100%;
-  max-width:300px;
-  margin:10px auto 0;
-}
-
-.cell{
-  aspect-ratio:1 / 1;
-  border-radius:14px;
-  border:1px solid var(--cellLine);
-  background:#fff;
-  padding:8px 6px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  color:var(--textDark);
-}
-
-.pct{
-  font-size:17px;
-  font-weight:900;
-  line-height:1.05;
-  color:var(--textDark);
-}
-
-.count{
-  margin-top:4px;
-  font-size:11px;
-  font-weight:700;
-  color:#333;
-  line-height:1.1;
-}
-
-.r0  { background:#f8bcbc !important; }
-.r10 { background:#f6d6a8 !important; }
-.r30 { background:#fff1a8 !important; }
-.r50 { background:#cfe9b6 !important; }
-.r70 { background:#8fd19e !important; }
-
-/* 半円エリア */
-.shooterHalfWrap{
-  width:100%;
-  display:flex;
-  justify-content:center;
-  align-items:flex-start;
-  overflow:visible;
-  margin-top:10px;
-  min-height:205px;
-  padding:6px 0 10px;
-}
-
-.shooterHalf{
-  position:relative;
-  width:360px;
-  height:205px;
-  background:#fff;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 205px 205px;
-  overflow:hidden;
-  flex:0 0 auto;
-}
-
-.shooterHalf::before{
-  content:"";
-  position:absolute;
-  left:50%;
-  transform:translateX(-50%);
-  top:0;
-  width:205px;
-  height:102px;
-  border:3px solid #111;
-  border-top:none;
-  border-radius:0 0 205px 205px;
-  background:transparent;
-  pointer-events:none;
-}
-
-.line{
-  position:absolute;
-  background:#111;
-  z-index:1;
-  pointer-events:none;
-}
-
-.diagL{
-  width:3px;
-  height:200px;
-  left:170px;
-  top:4px;
-  transform:rotate(30deg);
-  transform-origin:top center;
-}
-
-.diagR{
-  width:3px;
-  height:2000px;
-  right:170px;
-  top:4px;
-  transform:rotate(-30deg);
-  transform-origin:top center;
-}
-
-.sa{
-  position:absolute;
-  width:70px;
-  min-height:40px;
-  border:1px solid var(--cellLine);
-  border-radius:12px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-  color:#111;
-  padding:5px 4px;
-  background:#f3f3f3;
-  z-index:2;
-}
-
-.sa .pct{
-  font-size:15px;
-  font-weight:900;
-  line-height:1.05;
-}
-
-.sa .count{
-  margin-top:3px;
-  font-size:10px;
-  font-weight:700;
-  color:#333;
-  line-height:1.1;
-}
-
-/* 5 3 1 */
-.sa5{ top:2px; left:80px; }
-.sa3{ top:50px; left: 142px; }
-.sa1{ top:2px; right:80px; }
-
-/* 6 4 2 */
-.sa6{ top:70px; left:24px; }
-.sa4{ top:130px; left:142px; }
-.sa2{ top:70px; right:24px; }
-
-.legend{
-  margin-top:10px;
-  font-size:11px;
-  color:#444;
-  text-align:center;
-  line-height:1.6;
-  word-break:break-word;
-}
-
-.footerSpace{
-  height:8px;
-}
-
-/* タブレット以下 */
-@media (max-width:600px){
-  .periodRow{
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .periodRow .col{
-    width:100%;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    font-size:14px;
-    padding:10px 8px;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-
-  .total{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .legend{
-    font-size:10px;
-  }
-}
-
-/* やや狭いスマホ */
-@media (max-width:390px){
-  body{
-    padding-left:8px;
-    padding-right:8px;
-  }
-
-  .app{
-    max-width:100%;
-  }
-
-  .seg{
-    gap:6px;
-  }
-
-  .seg button{
-    font-size:12px;
-    min-height:40px;
-    padding:8px 4px;
-  }
-
-  .seg4 button{
-    font-size:11px;
-    padding:8px 2px;
-  }
-
-  input, select{
-    font-size:15px;
-    padding:10px 10px;
-  }
-
-  .grid{
-    max-width:270px;
-    gap:6px;
-  }
-
-  .cell{
-    border-radius:12px;
-  }
-
-  .pct{
-    font-size:16px;
-  }
-
-  .count{
-    font-size:10px;
-  }
-
-  .shooterHalfWrap{
-    min-height:188px;
-    padding:4px 0 10px;
-  }
-
-  .shooterHalf{
-    transform:scale(.92);
-    transform-origin:top center;
-  }
-}
-
-/* かなり狭い端末 */
-@media (max-width:360px){
-  .title{
-    font-size:16px;
-  }
-
-  .card{
-    padding:10px;
-    border-radius:14px;
-  }
-
-  .seg{
-    gap:5px;
-  }
-
-  .seg button{
-    font-size:11px;
-    min-height:38px;
-    padding:7px 2px;
-  }
-
-  .seg4 button{
-    font-size:10px;
-  }
-
-  input, select{
-    min-height:44px;
-    font-size:14px;
-    padding:9px 8px;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    font-size:13px;
-    padding:9px 6px;
-  }
-
-  .grid{
-    max-width:255px;
-    gap:5px;
-  }
-
-  .pct{
-    font-size:15px;
-  }
-
-  .count{
-    font-size:9px;
-  }
-
-  .shooterHalfWrap{
-    min-height:176px;
-    padding:4px 0 10px;
-  }
-
-  .shooterHalf{
-    transform:scale(.86);
-    transform-origin:top center;
-  }
-
-  .legend{
-    font-size:9px;
-  }
-}
-
-/* 期間指定まわり */
-.periodRow{
-  display:flex;
-  gap:8px;
-  align-items:flex-start;
-  width:100%;
-}
-
-.periodRow .col{
-  flex:1;
-  min-width:0;
-  width:100%;
-}
-
-.periodRow input{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-}
-
-/* スマホ対策 */
-@media (max-width:600px){
-  .periodRow{
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .periodRow .col{
-    width:100%;
-  }
-
-  .periodRow input[type="date"],
-  .periodRow input[type="month"]{
-    width:100%;
-    max-width:100%;
-    min-width:0;
-    font-size:14px;
-    padding:10px 8px;
-    overflow:hidden;
-    -webkit-appearance:none;
-    appearance:none;
-  }
-
-  .card{
-    overflow:hidden;
-  }
-}
-   
-
+      --bg:#0b1b3a;
+      --card:rgba(255,255,255,.08);
+      --card2:rgba(255,255,255,.12);
+      --text:#fff;
+      --muted:rgba(255,255,255,.72);
+      --line:rgba(255,255,255,.15);
+      --btn:#ffd400;
+      --btnText:#111;
+      --danger:#ff6b6b;
+      --ok:#59d38a;
+
+      --panelBg:#fff;
+      --panelLine:#d8d8d8;
+      --cellLine:#cfcfcf;
+      --textDark:#111;
+      --textSub:#444;
+    }
+
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    html,body{ margin:0; padding:0; }
+
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP","Segoe UI",Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-text-size-adjust:100%;
+      padding:10px 10px 24px;
+    }
+
+    .app{
+      width:100%;
+      max-width:420px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .title{
+      font-size:17px;
+      font-weight:900;
+      letter-spacing:.02em;
+      padding:2px 2px 0;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      overflow:hidden;
+    }
+
+    label{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin:0 0 6px;
+    }
+
+    input,select,button{ font:inherit; }
+
+    input,select{
+      width:100%;
+      min-width:0;
+      min-height:46px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      font-size:16px;
+      outline:none;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+
+    select option{ color:#111; background:#fff; }
+
+    .periodRow{
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
+      width:100%;
+    }
+
+    .col{
+      flex:1;
+      min-width:0;
+      width:100%;
+    }
+
+    .seg{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+
+    .seg4{ grid-template-columns:repeat(4,1fr); }
+
+    .seg button{
+      min-height:42px;
+      padding:8px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.18);
+      color:var(--text);
+      font-size:13px;
+      font-weight:900;
+      white-space:nowrap;
+      cursor:pointer;
+    }
+
+    .seg button.on{
+      background:var(--btn);
+      color:var(--btnText);
+      border-color:transparent;
+    }
+
+    .btn{
+      width:100%;
+      min-height:48px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      background:var(--btn);
+      color:var(--btnText);
+      font-size:16px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .hint{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+    }
+
+    .ok{ color:var(--ok); font-weight:900; }
+    .err{ color:var(--danger); font-weight:900; }
+
+    .resultPanel{
+      background:var(--panelBg);
+      border-radius:16px;
+      padding:12px;
+      border:1px solid var(--panelLine);
+      margin-top:10px;
+    }
+
+    .resultPanel .hint{ color:var(--textSub); }
+
+    .total{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:14px;
+      background:#fff;
+      color:var(--textDark);
+      border:1px solid var(--cellLine);
+      margin-top:2px;
+      font-weight:900;
+      font-size:14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+      width:100%;
+      max-width:300px;
+      margin:10px auto 0;
+    }
+
+    .cell{
+      aspect-ratio:1/1;
+      border-radius:14px;
+      border:1px solid var(--cellLine);
+      background:#fff;
+      padding:8px 6px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      color:var(--textDark);
+    }
+
+    .courseLabel{
+      font-size:10px;
+      font-weight:800;
+      color:#555;
+      margin-bottom:4px;
+    }
+
+    .pct{
+      font-size:17px;
+      font-weight:900;
+      line-height:1.05;
+      color:var(--textDark);
+    }
+
+    .count{
+      margin-top:4px;
+      font-size:11px;
+      font-weight:800;
+      color:#333;
+      line-height:1.1;
+    }
+
+    .r0{ background:#f8bcbc !important; }
+    .r10{ background:#f6d6a8 !important; }
+    .r30{ background:#fff1a8 !important; }
+    .r50{ background:#cfe9b6 !important; }
+    .r70{ background:#8fd19e !important; }
+
+    .shooterHalfWrap{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      overflow:visible;
+      margin-top:10px;
+      min-height:205px;
+      padding:6px 0 10px;
+    }
+
+    .shooterHalf{
+      position:relative;
+      width:360px;
+      height:205px;
+      background:#fff;
+      border:3px solid #111;
+      border-top:none;
+      border-radius:0 0 205px 205px;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+
+    .shooterHalf::before{
+      content:"";
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      top:0;
+      width:205px;
+      height:102px;
+      border:3px solid #111;
+      border-top:none;
+      border-radius:0 0 205px 205px;
+      background:transparent;
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .line{
+      position:absolute;
+      background:#111;
+      z-index:1;
+      pointer-events:none;
+    }
+
+    .diagL{
+      width:3px;
+      height:200px;
+      left:170px;
+      top:4px;
+      transform:rotate(30deg);
+      transform-origin:top center;
+    }
+
+    .diagR{
+      width:3px;
+      height:200px;
+      right:170px;
+      top:4px;
+      transform:rotate(-30deg);
+      transform-origin:top center;
+    }
+
+    .sa{
+      position:absolute;
+      width:70px;
+      min-height:40px;
+      border:1px solid var(--cellLine);
+      border-radius:12px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      color:#111;
+      padding:5px 4px;
+      background:#f3f3f3;
+      z-index:2;
+    }
+
+    .sa .areaLabel{
+      font-size:10px;
+      font-weight:900;
+      color:#555;
+      margin-bottom:1px;
+    }
+
+    .sa .pct{ font-size:15px; }
+    .sa .count{ margin-top:3px; font-size:10px; }
+
+    .sa5{ top:2px; left:80px; }
+    .sa3{ top:50px; left:142px; }
+    .sa1{ top:2px; right:80px; }
+    .sa6{ top:70px; left:24px; }
+    .sa4{ top:130px; left:142px; }
+    .sa2{ top:70px; right:24px; }
+
+    .legend{
+      margin-top:10px;
+      font-size:11px;
+      color:#444;
+      text-align:center;
+      line-height:1.6;
+      word-break:break-word;
+    }
+
+    @media (max-width:600px){
+      .periodRow{ flex-direction:column; gap:10px; }
+      .total{ flex-direction:column; align-items:flex-start; }
+      .legend{ font-size:10px; }
+      input[type="date"],input[type="month"]{
+        font-size:14px;
+        padding:10px 8px;
+      }
+    }
+
+    @media (max-width:390px){
+      body{ padding-left:8px; padding-right:8px; }
+      .app{ max-width:100%; }
+      .seg{ gap:6px; }
+      .seg button{ font-size:12px; min-height:40px; padding:8px 4px; }
+      .seg4 button{ font-size:11px; padding:8px 2px; }
+      input,select{ font-size:15px; padding:10px 10px; }
+      .grid{ max-width:270px; gap:6px; }
+      .cell{ border-radius:12px; }
+      .pct{ font-size:16px; }
+      .count{ font-size:10px; }
+      .shooterHalfWrap{ min-height:188px; padding:4px 0 10px; }
+      .shooterHalf{ transform:scale(.92); transform-origin:top center; }
+    }
+
+    @media (max-width:360px){
+      .title{ font-size:16px; }
+      .card{ padding:10px; border-radius:14px; }
+      .seg{ gap:5px; }
+      .seg button{ font-size:11px; min-height:38px; padding:7px 2px; }
+      .seg4 button{ font-size:10px; }
+      input,select{ min-height:44px; font-size:14px; padding:9px 8px; }
+      input[type="date"],input[type="month"]{ font-size:13px; padding:9px 6px; }
+      .grid{ max-width:255px; gap:5px; }
+      .pct{ font-size:15px; }
+      .count{ font-size:9px; }
+      .shooterHalfWrap{ min-height:176px; padding:4px 0 10px; }
+      .shooterHalf{ transform:scale(.86); transform-origin:top center; }
+      .legend{ font-size:9px; }
+    }
   </style>
 </head>
+
 <body>
   <div class="app">
     <div class="title">ゴーリーデータ</div>
 
-    <!-- Step 1 -->
     <div class="card">
       <label>1) ゴーリー名</label>
       <select id="goalieSel">
@@ -568,7 +388,6 @@ input, select{
       </select>
     </div>
 
-    <!-- Step 2 -->
     <div class="card">
       <label>2) メニュー選択</label>
 
@@ -581,8 +400,8 @@ input, select{
       <div id="catBox" style="display:none;">
         <label>カテゴリー</label>
         <select id="catSel">
-          <option value="vs">対人メニュー</option>
-          <option value="shoot">シュー練メニュー</option>
+          <option value="対人">対人メニュー</option>
+          <option value="シュー練">シュー練メニュー</option>
         </select>
       </div>
 
@@ -594,7 +413,6 @@ input, select{
       </div>
     </div>
 
-    <!-- Step 3 -->
     <div class="card">
       <label>3) 期間設定</label>
 
@@ -628,22 +446,18 @@ input, select{
             <input id="toMonth" type="month" />
           </div>
         </div>
-        <div class="hint" style="margin-top:8px;">月ごと指定は「2ヶ月以前」のデータ向け（例：2025-10〜2025-12）</div>
+        <div class="hint" style="margin-top:8px;">月ごと指定は「2ヶ月以前」のデータ向け</div>
       </div>
 
       <div style="margin-top:14px;">
         <label>4) ゴーリー位置</label>
-
         <div class="seg seg4">
           <button type="button" class="on" id="posAll">全体</button>
-          <button type="button" id="posRight">左</button>
-          <button type="button" id="posCenter">中央</button>
-          <button type="button" id="posLeft">右</button>
+          <button type="button" id="posL">左</button>
+          <button type="button" id="posC">中央</button>
+          <button type="button" id="posR">右</button>
         </div>
-
-        <div class="hint" style="margin-top:8px;">
-          ゴーリーの立ち位置ごとに結果を絞り込みます
-        </div>
+        <div class="hint" style="margin-top:8px;">ゴーリーの立ち位置ごとに結果を絞り込みます</div>
       </div>
 
       <div style="margin-top:10px;">
@@ -653,9 +467,8 @@ input, select{
       <div id="msg" class="hint" style="margin-top:10px;"></div>
     </div>
 
-    <!-- Step 4 -->
     <div class="card" id="resultCard" style="display:none;">
-      <div class="hint">5) 結果（セーブ率 = セーブ / (セーブ + 成功)）</div>
+      <div class="hint">5) 結果（セーブ率 = セーブ /（セーブ + ゴール））</div>
 
       <div class="resultPanel">
         <div class="total" id="totalBox"></div>
@@ -668,37 +481,37 @@ input, select{
         <div class="hint">シューターエリア別セーブ率</div>
 
         <div class="shooterHalfWrap">
-          <div class="shooterHalf" id="shooterHalf">
+          <div class="shooterHalf">
             <div class="line diagL"></div>
             <div class="line diagR"></div>
-            <div class="line midLine"></div>
-        
+
             <div class="sa sa5" id="area5box">
+              <div class="areaLabel">5</div>
               <div class="pct" id="areaPct5">—</div>
               <div class="count" id="areaCnt5">0/0</div>
             </div>
-        
             <div class="sa sa3" id="area3box">
+              <div class="areaLabel">3</div>
               <div class="pct" id="areaPct3">—</div>
               <div class="count" id="areaCnt3">0/0</div>
             </div>
-        
             <div class="sa sa1" id="area1box">
+              <div class="areaLabel">1</div>
               <div class="pct" id="areaPct1">—</div>
               <div class="count" id="areaCnt1">0/0</div>
             </div>
-        
             <div class="sa sa6" id="area6box">
+              <div class="areaLabel">6</div>
               <div class="pct" id="areaPct6">—</div>
               <div class="count" id="areaCnt6">0/0</div>
             </div>
-        
             <div class="sa sa4" id="area4box">
+              <div class="areaLabel">4</div>
               <div class="pct" id="areaPct4">—</div>
               <div class="count" id="areaCnt4">0/0</div>
             </div>
-        
             <div class="sa sa2" id="area2box">
+              <div class="areaLabel">2</div>
               <div class="pct" id="areaPct2">—</div>
               <div class="count" id="areaCnt2">0/0</div>
             </div>
@@ -708,275 +521,477 @@ input, select{
         <div class="legend" id="shooterLegend"></div>
       </div>
     </div>
-
-    <div class="footerSpace"></div>
   </div>
 
-<script>
-  // ====== ここだけ必要に応じて差し替え ======
-  const SERVICE_URL = "https://script.google.com/macros/s/AKfycbwHdYfkDlZX6CWnv9tN2NxH8Hhg15F07mfEChnQBJm8JtATw78De9Z4e_3-NYCX7Rbrdw/exec";
-  // ========================================
+  <script>
+    /************************************************************
+     * Goalie Data Viewer Front
+     * - GAS: Google Apps Script Web App
+     * - Sheets expected:
+     *   goalies, menus, sessions, shots, undo_log
+     *
+     * このフロントは、GAS側に以下のGET actionがある前提です。
+     * - getGoalies
+     * - getMenus
+     * - summary9
+     *
+     * ただし summary9 の返り値が多少違っても、shots配列が返ってくる場合は
+     * フロント側で再集計できるようにしてあります。
+     ************************************************************/
 
-  let scope = "ALL";         // ALL | CATEGORY | MENU
-  let periodMode = "DATE";   // DATE | MONTH
-  let goaliePosScope = "ALL"; // ALL | LEFT | CENTER | RIGHT
-  let menus = [];
-  let goalies = [];
+    const SERVICE_URL = "https://script.google.com/macros/s/AKfycbxav1MVJSEYajljqsSJgNbD17U2iNi_IxQw-VoQJBqWlLMdou82gfCEjlkmP3ds_tUN/exec";
 
-  const $ = (id) => document.getElementById(id);
+    let scope = "ALL";          // ALL | CATEGORY | MENU
+    let periodMode = "DATE";    // DATE | MONTH
+    let goaliePosScope = "ALL"; // ALL | L | C | R
+    let goalies = [];
+    let menus = [];
 
-  function showMsg(text, type="") {
-    const el = $("msg");
-    el.className = "hint " + (type==="ok" ? "ok" : type==="err" ? "err" : "");
-    el.textContent = text || "";
-  }
+    const $ = (id) => document.getElementById(id);
 
-  function ymd(d){
-    const y=d.getFullYear();
-    const m=("0"+(d.getMonth()+1)).slice(-2);
-    const dd=("0"+d.getDate()).slice(-2);
-    return `${y}-${m}-${dd}`;
-  }
-
-  function ym(d){
-    const y=d.getFullYear();
-    const m=("0"+(d.getMonth()+1)).slice(-2);
-    return `${y}-${m}`;
-  }
-
-  function clampDateInputsTo2Months(){
-    const today = new Date();
-    const from = new Date(today.getFullYear(), today.getMonth()-2, today.getDate());
-    $("fromDate").value = ymd(from);
-    $("toDate").value = ymd(today);
-    $("fromDate").max = ymd(today);
-    $("toDate").max = ymd(today);
-  }
-
-  function rateClass(rate){
-    if (rate === null) return "";
-    const p = rate * 100;
-    if (p < 10) return "r0";
-    if (p < 30) return "r10";
-    if (p < 50) return "r30";
-    if (p < 70) return "r50";
-    return "r70";
-  }
-
-  function rateColor(rate){
-    if (rate == null) return "#f3f3f3";
-    const p = rate * 100;
-    if (p < 10) return "#f8bcbc";
-    if (p < 30) return "#f6d6a8";
-    if (p < 50) return "#fff1a8";
-    if (p < 70) return "#cfe9b6";
-    return "#8fd19e";
-  }
-
-  function formatPct(rate){
-    return (rate == null) ? "—" : `${Math.round(rate * 100)}%`;
-  }
-
-  function escapeHtml(s){
-    return String(s).replace(/[&<>"']/g, (c)=>({
-      "&":"&amp;",
-      "<":"&lt;",
-      ">":"&gt;",
-      '"':"&quot;",
-      "'":"&#039;"
-    }[c]));
-  }
-
-  async function apiGet(params){
-    const u = new URL(SERVICE_URL);
-    Object.entries(params).forEach(([k,v]) => u.searchParams.set(k, v));
-    const res = await fetch(u.toString(), { method:"GET" });
-    const text = await res.text();
-    try {
-      return JSON.parse(text);
-    } catch(e){
-      throw new Error("JSON parse failed: " + text.slice(0,120));
+    function showMsg(text, type=""){
+      const el = $("msg");
+      el.className = "hint " + (type === "ok" ? "ok" : type === "err" ? "err" : "");
+      el.textContent = text || "";
     }
-  }
 
-  async function loadMasters(){
-    const g = await apiGet({ action:"listGoalies" });
-    if (!g.ok) throw new Error(g.error || "listGoalies failed");
-    goalies = g.goalies || [];
+    function setBusy(isBusy){
+      $("btnRun").disabled = !!isBusy;
+      $("btnRun").textContent = isBusy ? "集計中…" : "結果を見る";
+    }
 
-    const gs = $("goalieSel");
-    gs.innerHTML =
-      `<option value="">選択してください</option>` +
-      goalies.map(x => `<option value="${x.goalieId}">${escapeHtml(x.name)}</option>`).join("");
+    function escapeHtml(s){
+      return String(s ?? "").replace(/[&<>"']/g, (c)=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+      }[c]));
+    }
 
-    const m = await apiGet({ action:"listMenus" });
-    if (!m.ok) throw new Error(m.error || "listMenus failed");
-    menus = m.menus || [];
+    function ymd(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      const day = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${day}`;
+    }
 
-    const ms = $("menuSel");
-    ms.innerHTML =
-      `<option value="">選択してください</option>` +
-      menus.map(x => `<option value="${x.menuId}">${escapeHtml(x.menuName)}（${escapeHtml(x.groupType)}）</option>`).join("");
-  }
+    function ym(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,"0");
+      return `${y}-${m}`;
+    }
 
-  function setScope(next){
-    scope = next;
-    $("scopeAll").classList.toggle("on", scope==="ALL");
-    $("scopeCat").classList.toggle("on", scope==="CATEGORY");
-    $("scopeMenu").classList.toggle("on", scope==="MENU");
-    $("catBox").style.display  = (scope==="CATEGORY") ? "" : "none";
-    $("menuBox").style.display = (scope==="MENU") ? "" : "none";
-  }
+    function normalizeText(v){
+      return String(v ?? "").trim();
+    }
 
-  function setGoaliePosScope(next){
-    goaliePosScope = next;
-
-    $("posAll").classList.toggle("on", goaliePosScope==="ALL");
-    $("posLeft").classList.toggle("on", goaliePosScope==="LEFT");
-    $("posCenter").classList.toggle("on", goaliePosScope==="CENTER");
-    $("posRight").classList.toggle("on", goaliePosScope==="RIGHT");
-  }
-
-  function setPeriodMode(next){
-    periodMode = next;
-    $("modeDate").classList.toggle("on", periodMode==="DATE");
-    $("modeMonth").classList.toggle("on", periodMode==="MONTH");
-    $("dateBox").style.display  = (periodMode==="DATE") ? "" : "none";
-    $("monthBox").style.display = (periodMode==="MONTH") ? "" : "none";
-  }
-
-  async function runSummary(){
-    try{
-      showMsg("集計中…");
-      $("resultCard").style.display = "none";
-
-      const goalieId = $("goalieSel").value;
-      if (!goalieId) return showMsg("ゴーリー名を選択してください", "err");
-
-      let from="", to="";
-      if (periodMode==="DATE"){
-        from = $("fromDate").value;
-        to   = $("toDate").value;
-        if (!from || !to) return showMsg("日付（From/To）を入れてください", "err");
-      } else {
-        from = $("fromMonth").value;
-        to   = $("toMonth").value;
-        if (!from || !to) return showMsg("月（From/To）を入れてください", "err");
+    function getId(obj, keys){
+      for (const k of keys){
+        const v = obj?.[k];
+        if (v !== undefined && v !== null && String(v).trim() !== "") return String(v).trim();
       }
+      return "";
+    }
+
+    function pickArray(json, keys){
+      for (const k of keys){
+        if (Array.isArray(json?.[k])) return json[k];
+      }
+      if (Array.isArray(json)) return json;
+      if (Array.isArray(json?.data)) return json.data;
+      return [];
+    }
+
+    async function apiGet(params){
+      const url = new URL(SERVICE_URL);
+      Object.entries(params).forEach(([k,v]) => {
+        if (v !== undefined && v !== null && String(v) !== "") url.searchParams.set(k, v);
+      });
+
+      const res = await fetch(url.toString(), { method:"GET", cache:"no-store" });
+      const text = await res.text();
+
+      let json;
+      try{
+        json = JSON.parse(text);
+      }catch(e){
+        throw new Error("GASからJSON以外が返っています: " + text.slice(0,160));
+      }
+
+      if (json && json.ok === false){
+        throw new Error(json.error || json.message || "GAS API error");
+      }
+
+      return json;
+    }
+
+    function normalizeGoalie(raw){
+      const goalieId = getId(raw, ["goalieId", "id", "playerId"]);
+      const name = getId(raw, ["name", "goalieName", "playerName"]);
+      const status = normalizeText(raw?.status || raw?.isActive || "active");
+      return { ...raw, goalieId, name, status };
+    }
+
+    function normalizeMenu(raw){
+      const menuId = getId(raw, ["menuId", "id"]);
+      const menuName = getId(raw, ["menuName", "name", "title"]);
+      const groupType = normalizeText(raw?.groupType || raw?.category || raw?.type || "");
+      const isActive = raw?.isActive;
+      return { ...raw, menuId, menuName, groupType, isActive };
+    }
+
+    function isActiveValue(v){
+      if (v === undefined || v === null || v === "") return true;
+      const s = String(v).trim().toLowerCase();
+      return ["true", "active", "1", "yes", "表示", "有効"].includes(s);
+    }
+
+    async function loadMasters(){
+      const gJson = await apiGet({ action:"getGoalies" });
+      goalies = pickArray(gJson, ["goalies", "players", "items", "rows"])
+        .map(normalizeGoalie)
+        .filter(g => g.goalieId && g.name && isActiveValue(g.status));
+
+      const gs = $("goalieSel");
+      if (!goalies.length){
+        gs.innerHTML = `<option value="">ゴーリーが見つかりません</option>`;
+      }else{
+        gs.innerHTML = `<option value="">選択してください</option>` +
+          goalies.map(g => `<option value="${escapeHtml(g.goalieId)}">${escapeHtml(g.name)}</option>`).join("");
+      }
+
+      const mJson = await apiGet({ action:"getMenus" });
+      menus = pickArray(mJson, ["menus", "items", "rows"])
+        .map(normalizeMenu)
+        .filter(m => m.menuId && m.menuName && isActiveValue(m.isActive));
+
+      const ms = $("menuSel");
+      if (!menus.length){
+        ms.innerHTML = `<option value="">メニューが見つかりません</option>`;
+      }else{
+        ms.innerHTML = `<option value="">選択してください</option>` +
+          menus.map(m => {
+            const label = m.groupType ? `${m.menuName}（${m.groupType}）` : m.menuName;
+            return `<option value="${escapeHtml(m.menuId)}">${escapeHtml(label)}</option>`;
+          }).join("");
+      }
+    }
+
+    function setScope(next){
+      scope = next;
+      $("scopeAll").classList.toggle("on", scope === "ALL");
+      $("scopeCat").classList.toggle("on", scope === "CATEGORY");
+      $("scopeMenu").classList.toggle("on", scope === "MENU");
+      $("catBox").style.display = scope === "CATEGORY" ? "" : "none";
+      $("menuBox").style.display = scope === "MENU" ? "" : "none";
+    }
+
+    function setPeriodMode(next){
+      periodMode = next;
+      $("modeDate").classList.toggle("on", periodMode === "DATE");
+      $("modeMonth").classList.toggle("on", periodMode === "MONTH");
+      $("dateBox").style.display = periodMode === "DATE" ? "" : "none";
+      $("monthBox").style.display = periodMode === "MONTH" ? "" : "none";
+    }
+
+    function setGoaliePosScope(next){
+      goaliePosScope = next;
+      $("posAll").classList.toggle("on", goaliePosScope === "ALL");
+      $("posL").classList.toggle("on", goaliePosScope === "L");
+      $("posC").classList.toggle("on", goaliePosScope === "C");
+      $("posR").classList.toggle("on", goaliePosScope === "R");
+    }
+
+    function initDates(){
+      const today = new Date();
+      const twoMonthsAgo = new Date(today.getFullYear(), today.getMonth()-2, today.getDate());
+      $("fromDate").value = ymd(twoMonthsAgo);
+      $("toDate").value = ymd(today);
+      $("fromDate").max = ymd(today);
+      $("toDate").max = ymd(today);
+
+      const fromM = new Date(today.getFullYear(), today.getMonth()-4, 1);
+      const toM = new Date(today.getFullYear(), today.getMonth()-3, 1);
+      $("fromMonth").value = ym(fromM);
+      $("toMonth").value = ym(toM);
+    }
+
+    function rateClass(rate){
+      if (rate === null || rate === undefined || Number.isNaN(rate)) return "";
+      const p = rate * 100;
+      if (p < 10) return "r0";
+      if (p < 30) return "r10";
+      if (p < 50) return "r30";
+      if (p < 70) return "r50";
+      return "r70";
+    }
+
+    function rateColor(rate){
+      if (rate === null || rate === undefined || Number.isNaN(rate)) return "#f3f3f3";
+      const p = rate * 100;
+      if (p < 10) return "#f8bcbc";
+      if (p < 30) return "#f6d6a8";
+      if (p < 50) return "#fff1a8";
+      if (p < 70) return "#cfe9b6";
+      return "#8fd19e";
+    }
+
+    function formatPct(rate){
+      return (rate === null || rate === undefined || Number.isNaN(rate)) ? "—" : `${Math.round(rate * 100)}%`;
+    }
+
+    function toRate(cell){
+      if (!cell) return null;
+      if (cell.rate !== undefined && cell.rate !== null && cell.rate !== "") return Number(cell.rate);
+      const saves = Number(cell.saves ?? cell.save ?? 0);
+      const denom = Number(cell.denom ?? cell.total ?? cell.attempts ?? 0);
+      return denom > 0 ? saves / denom : null;
+    }
+
+    function normalizeSummaryCell(raw){
+      const saves = Number(raw?.saves ?? raw?.save ?? raw?.saved ?? 0);
+      const goals = Number(raw?.goals ?? raw?.goal ?? 0);
+      const denom = Number(raw?.denom ?? raw?.total ?? raw?.attempts ?? (saves + goals) ?? 0);
+      const rate = raw?.rate !== undefined && raw?.rate !== null && raw?.rate !== "" ? Number(raw.rate) : (denom > 0 ? saves / denom : null);
+      return { saves, goals, denom, rate };
+    }
+
+    function normalizeShot(raw){
+      const resultRaw = normalizeText(raw?.result || raw?.shotResult || raw?.status).toLowerCase();
+      let isSave = false;
+      let isGoal = false;
+
+      if (["save", "saved", "セーブ", "止め", "止めた"].includes(resultRaw)) isSave = true;
+      if (["goal", "goals", "成功", "ゴール", "得点"].includes(resultRaw)) isGoal = true;
+
+      return {
+        goalieId: getId(raw, ["goalieId", "playerId"]),
+        menuId: getId(raw, ["menuId"]),
+        groupType: normalizeText(raw?.groupType),
+        goaliePos: normalizeText(raw?.goaliePos || raw?.pos).toUpperCase(),
+        course9: Number(raw?.course9 || raw?.course || 0),
+        shooterArea: Number(raw?.shooterArea || raw?.area || 0),
+        isSave,
+        isGoal
+      };
+    }
+
+    function buildSummaryFromShots(shots){
+      const grid = {};
+      const shooterArea = {};
+      for (let i=1; i<=9; i++) grid[i] = { saves:0, goals:0, denom:0, rate:null };
+      for (let i=1; i<=6; i++) shooterArea[i] = { saves:0, goals:0, denom:0, rate:null };
+
+      let total = { saves:0, goals:0, denom:0, rate:null };
+
+      shots.map(normalizeShot).forEach(s => {
+        if (!s.isSave && !s.isGoal) return;
+
+        const add = (cell) => {
+          if (s.isSave) cell.saves += 1;
+          if (s.isGoal) cell.goals += 1;
+          cell.denom += 1;
+        };
+
+        add(total);
+        if (s.course9 >= 1 && s.course9 <= 9) add(grid[s.course9]);
+        if (s.shooterArea >= 1 && s.shooterArea <= 6) add(shooterArea[s.shooterArea]);
+      });
+
+      const finalize = (cell) => {
+        cell.rate = cell.denom > 0 ? cell.saves / cell.denom : null;
+        return cell;
+      };
+
+      Object.values(grid).forEach(finalize);
+      Object.values(shooterArea).forEach(finalize);
+      finalize(total);
+
+      return { total, grid, shooterArea };
+    }
+
+    function normalizeSummary(json){
+      const shots = pickArray(json, ["shots", "records", "rows"]);
+      if (shots.length) return buildSummaryFromShots(shots);
+
+      const total = normalizeSummaryCell(json?.total || json?.summary || {});
+
+      const gridRaw = json?.grid || json?.course9 || json?.courses || {};
+      const grid = {};
+      for (let i=1; i<=9; i++){
+        grid[i] = normalizeSummaryCell(gridRaw[i] || gridRaw[String(i)] || {});
+      }
+
+      const areaRaw = json?.shooterArea || json?.area6 || json?.areas || {};
+      const shooterArea = {};
+      for (let i=1; i<=6; i++){
+        shooterArea[i] = normalizeSummaryCell(areaRaw[i] || areaRaw[String(i)] || {});
+      }
+
+      return { total, grid, shooterArea };
+    }
+
+    function renderSummary(rawJson){
+      const json = normalizeSummary(rawJson);
+      const total = json.total || { saves:0, denom:0, rate:null };
+
+      $("totalBox").innerHTML = `
+        <div>合計セーブ率：${formatPct(total.rate)}</div>
+        <div>${Number(total.saves || 0)} / ${Number(total.denom || 0)}</div>
+      `;
+
+      const courseOrder = [1,2,3,4,5,6,7,8,9];
+      $("grid").innerHTML = courseOrder.map(n => {
+        const cell = json.grid?.[n] || {};
+        const rate = toRate(cell);
+        return `
+          <div class="cell ${rateClass(rate)}">
+            <div class="courseLabel">${n}</div>
+            <div class="pct">${formatPct(rate)}</div>
+            <div class="count">${Number(cell.saves || 0)}/${Number(cell.denom || 0)}</div>
+          </div>
+        `;
+      }).join("");
+
+      for (let n=1; n<=6; n++){
+        const cell = json.shooterArea?.[n] || {};
+        const rate = toRate(cell);
+        const boxEl = $(`area${n}box`);
+        const pctEl = $(`areaPct${n}`);
+        const cntEl = $(`areaCnt${n}`);
+        if (boxEl) boxEl.style.background = rateColor(rate);
+        if (pctEl) pctEl.textContent = formatPct(rate);
+        if (cntEl) cntEl.textContent = `${Number(cell.saves || 0)}/${Number(cell.denom || 0)}`;
+      }
+
+      const areaOrder = [5,3,1,6,4,2];
+      $("shooterLegend").textContent = areaOrder.map(n => {
+        const cell = json.shooterArea?.[n] || {};
+        return `エリア${n}: ${formatPct(toRate(cell))} (${Number(cell.saves || 0)}/${Number(cell.denom || 0)})`;
+      }).join(" ｜ ");
+
+      $("resultCard").style.display = "";
+    }
+
+    function buildParams(){
+      const goalieId = $("goalieSel").value;
+      if (!goalieId) throw new Error("ゴーリー名を選択してください");
+
+      let from = "";
+      let to = "";
+      if (periodMode === "DATE"){
+        from = $("fromDate").value;
+        to = $("toDate").value;
+        if (!from || !to) throw new Error("日付（From/To）を入れてください");
+      }else{
+        from = $("fromMonth").value;
+        to = $("toMonth").value;
+        if (!from || !to) throw new Error("月（From/To）を入れてください");
+      }
+
+      if (from > to) throw new Error("FromがToより後になっています");
 
       const params = {
         action:"summary9",
         goalieId,
-        menuScope: scope,
+        from,
+        to,
         periodMode,
         goaliePosScope,
-        from, to
+        menuScope:scope
       };
 
-      if (scope==="CATEGORY"){
+      if (scope === "CATEGORY"){
         params.groupType = $("catSel").value;
       }
 
-      if (scope==="MENU"){
+      if (scope === "MENU"){
         const menuId = $("menuSel").value;
-        if (!menuId) return showMsg("メニュー名を選択してください", "err");
+        if (!menuId) throw new Error("メニュー名を選択してください");
         params.menuId = menuId;
       }
 
-      const json = await apiGet(params);
-      if (!json.ok) throw new Error(json.error || "summary failed");
-
-      renderSummary(json);
-      showMsg("表示しました", "ok");
-    }catch(e){
-      console.error(e);
-      showMsg("エラー: " + (e.message || e), "err");
+      return params;
     }
+
+    async function runSummary(){
+      try{
+        setBusy(true);
+        showMsg("集計中…");
+        $("resultCard").style.display = "none";
+
+        const params = buildParams();
+        let json;
+
+try{
+  // ① まずsummary9を試す
+  json = await apiGet(params);
+
+}catch(firstError){
+  const msg = String(firstError?.message || firstError || "");
+
+  // ② summary9がないときだけ fallback
+  if (!msg.includes("Unknown action") && !msg.includes("summary9")){
+    throw firstError;
   }
 
-  function renderSummary(json){
-    const total = json.total || {};
-    const totalRate = formatPct(total.rate);
+  showMsg("summary9 が未実装のため、ショットデータから集計中…");
 
-    $("totalBox").innerHTML = `
-      <div>合計セーブ率：${totalRate}</div>
-      <div>${total.saves||0} / ${total.denom||0}</div>
-    `;
+  // ③ getShotsに切り替え
+  const fallbackParams = {
+    ...params,
+    action:"getShots"
+  };
 
-    // 3x3
-    const g = json.grid || {};
-    const cells = [];
+  json = await apiGet(fallbackParams);
+}
 
-    for (let i=1; i<=9; i++){
-      const cell = g[i] || {};
-      const rate = (cell.rate == null) ? null : cell.rate;
-      const pct  = formatPct(rate);
-      const cls  = rateClass(rate);
-
-      cells.push(`
-        <div class="cell ${cls}">
-          <div class="pct">${pct}</div>
-          <div class="count">${cell.saves||0}/${cell.denom||0}</div>
-        </div>
-      `);
+renderSummary(json);
+        showMsg("表示しました", "ok");
+      }catch(e){
+        console.error(e);
+        showMsg("エラー: " + (e.message || e), "err");
+      }finally{
+        setBusy(false);
+      }
     }
-    $("grid").innerHTML = cells.join("");
 
-    // shooter area
-    const shooter = json.shooterArea || {};
-    [1,2,3,4,5,6].forEach(n=>{
-      const cell = shooter[n] || {};
-      const rate = (cell.rate == null) ? null : cell.rate;
-      const saves = cell.saves || 0;
-      const denom = cell.denom || 0;
-      
-      const boxEl = document.getElementById(`area${n}box`);
-      const pctEl = document.getElementById(`areaPct${n}`);
-      const cntEl = document.getElementById(`areaCnt${n}`);
-      
-      if (boxEl) boxEl.style.background = rateColor(rate);
-      if (pctEl) pctEl.textContent = formatPct(rate);
-      if (cntEl) cntEl.textContent = `${saves}/${denom}`;
-    });
+    function bindEvents(){
+      $("scopeAll").addEventListener("click", () => setScope("ALL"));
+      $("scopeCat").addEventListener("click", () => setScope("CATEGORY"));
+      $("scopeMenu").addEventListener("click", () => setScope("MENU"));
 
-    const order = [5,3,1,6,4,2];
-    $("shooterLegend").textContent = order.map(n=>{
-      const cell = shooter[n] || {};
-      return `エリア${n}: ${formatPct(cell.rate == null ? null : cell.rate)} (${cell.saves||0}/${cell.denom||0})`;
-    }).join(" ｜ ");
+      $("modeDate").addEventListener("click", () => setPeriodMode("DATE"));
+      $("modeMonth").addEventListener("click", () => setPeriodMode("MONTH"));
 
-    $("resultCard").style.display = "";
-  }
+      $("posAll").addEventListener("click", () => setGoaliePosScope("ALL"));
+      $("posL").addEventListener("click", () => setGoaliePosScope("L"));
+      $("posC").addEventListener("click", () => setGoaliePosScope("C"));
+      $("posR").addEventListener("click", () => setGoaliePosScope("R"));
 
-  $("scopeAll").addEventListener("click", ()=>setScope("ALL"));
-  $("scopeCat").addEventListener("click", ()=>setScope("CATEGORY"));
-  $("scopeMenu").addEventListener("click", ()=>setScope("MENU"));
-  $("modeDate").addEventListener("click", ()=>setPeriodMode("DATE"));
-  $("modeMonth").addEventListener("click", ()=>setPeriodMode("MONTH"));
-  $("posAll").addEventListener("click", ()=>setGoaliePosScope("ALL"));
-  $("posLeft").addEventListener("click", ()=>setGoaliePosScope("LEFT"));
-  $("posCenter").addEventListener("click", ()=>setGoaliePosScope("CENTER"));
-  $("posRight").addEventListener("click", ()=>setGoaliePosScope("RIGHT"));
-  $("btnRun").addEventListener("click", runSummary);
-
-  (async function init(){
-    clampDateInputsTo2Months();
-
-    const today = new Date();
-    const fm = new Date(today.getFullYear(), today.getMonth()-4, 1);
-    const tm = new Date(today.getFullYear(), today.getMonth()-3, 1);
-    $("fromMonth").value = ym(fm);
-    $("toMonth").value = ym(tm);
-
-    try{
-      showMsg("マスタ読み込み中…");
-      await loadMasters();
-      showMsg("準備OK。条件を選んで「結果を見る」", "ok");
-    }catch(e){
-      console.error(e);
-      showMsg("マスタ取得に失敗: " + (e.message||e) + "（listGoalies/listMenus が未実装ならGAS側に追加が必要）", "err");
+      $("btnRun").addEventListener("click", runSummary);
     }
-  })();
-</script>
+
+    async function init(){
+      bindEvents();
+      initDates();
+      setScope("ALL");
+      setPeriodMode("DATE");
+      setGoaliePosScope("ALL");
+
+      try{
+        showMsg("マスタ読み込み中…");
+        await loadMasters();
+        showMsg("準備OK。条件を選んで「結果を見る」", "ok");
+      }catch(e){
+        console.error(e);
+        showMsg("マスタ取得に失敗: " + (e.message || e), "err");
+      }
+    }
+
+    init();
+  </script>
 </body>
 </html>
